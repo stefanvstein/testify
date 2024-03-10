@@ -155,52 +155,56 @@
 (def ^:private request-prompt (Object.))
 (def ^:private request-exit (Object.))
 
-(defn read-eval-print [{:keys [input-selector]
-                        :as config}]
+(defn read-all [{:keys [input-selector]
+                 :as config}]
+  (->> ((fn fun []
+          (let [input (main/with-read-known (server/repl-read request-prompt request-exit))]
+            (cond (= request-prompt input) (recur)
+                  (= request-exit input) nil
+                  :else (let [inputs (input-selector input config)]
+                          (if inputs
+                            (concat inputs (lazy-seq (fun)))
+                            (recur)))))))
+       (into [])))
+
+
+(comment
+  (binding [*ns* *ns*]
+    (with-open [rdr (-> "src/tryout.clj"
+                        io/reader
+                        LineNumberingPushbackReader.)]
+      (binding [*source-path* (str "tryout") *in* rdr]
+         (read-all {:input-selector eval-all})))))
+
+(defn eval-print [inputs]
   (let [read-eval *read-eval*
-        input (main/with-read-known (server/repl-read request-prompt request-exit))]
-    (if (#{request-prompt request-exit} input)
-      input
-      (let [inputs (input-selector input config)]
-        (loop [input (first inputs) inputs (next inputs)]
-          
-          (when input
-            (pp/pprint input)
-            (let [value (binding [*read-eval* read-eval] (eval input))]
-              (set! *3 *2)
-              (set! *2 *1)
-              (set! *1 value)
-              (print "=> ")
-              (pp/pprint value)
-              (println))
-            (when inputs (recur (first inputs) (next inputs)))))))))
+        ]
+    
+    (loop [input (first inputs) inputs (next inputs)]
+      
+      (when input
+        (pp/pprint input)
+        (let [value (binding [*read-eval* read-eval] (eval input))]
+          (set! *3 *2)
+          (set! *2 *1)
+          (set! *1 value)
+          (print "=> ")
+          (pp/pprint value)
+          (println))
+        (when inputs (recur (first inputs) (next inputs)))))))
 
-(defn repl
-  "Transcript-making REPL. Like a normal REPL except:
-  
-- pretty prints inputs
-- prints '=> ' before pretty printing results
-- throws on exception
+#_(defmacro with-another-classloader [& body]
+  `())
 
-Not intended for interactive use -- point this at a file to
-produce a transcript as-if a human had performed the
-interactions."
-  [{:keys [new-classpath?] :as config}]
-  (let [cl (.getContextClassLoader (Thread/currentThread))]
+(defn repl [{:keys [new-classpath?] :as config}]
+  (let [inputs (read-all config)
+        cl (.getContextClassLoader (Thread/currentThread))]
     (try
       (when new-classpath?
         (.setContextClassLoader (Thread/currentThread)
                                 (clojure.lang.DynamicClassLoader. cl)))
       (main/with-bindings
-        (binding [*exit-items* (atom ())]
-          (try
-            (loop []
-              (let [value (read-eval-print config)]
-                (when-not (identical? value request-exit)
-                  (recur))))
-            (finally
-              (doseq [item @*exit-items*]
-                (item))))))
+        (eval-print inputs))
       (finally
         (when new-classpath?
           (.setContextClassLoader (Thread/currentThread) cl))))))
@@ -218,7 +222,8 @@ interactions."
     (binding [*ns* *ns*]
       (with-open [rdr (-> (or (.getResourceAsStream cl (str path ".clj"))
                               (.getResourceAsStream cl (str path ".cljc"))
-                              (throw (ex-info (str "Can't source for " ns-str)                                                      {:looking-for (str path ".clj")})))
+                              (throw (ex-info (str "Can't source for " ns-str)
+                                              {:looking-for (str path ".clj")})))
                           io/reader
                           LineNumberingPushbackReader.)]
         (binding [*source-path* (str ns-str) *in* rdr]

@@ -15,3 +15,8 @@
  #_(throw (ex-info "it happens" {}))
  (fun))
 
+
+(a/test-comment
+ (println "Another test-comment")
+ (fun))
+
