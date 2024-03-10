@@ -30,7 +30,7 @@
 (defn ns-privates
   [ns]
   (let [ns (the-ns ns)]
-    (filter-key val (fn [^clojure.lang.Var v] 
+    (filter-key val (fn [^clojure.lang.Var v]
                       (and (instance? clojure.lang.Var v)
                            (= ns (.ns v))
                            (not (.isPublic v))))
@@ -49,12 +49,12 @@
         (when-not v
           (throw (new java.lang.IllegalAccessError
                       (str sym " does not exist"))))
-        (list 'def sym v))))) 
+        (list 'def sym v)))))
 
 (defmacro test-comment
-  "A test to be run in a repl session. repl-test will run contained 
-  statement automitically, in a another namespace with everything in 
-  this namespace referred. 
+  "A test to be run in a repl session. repl-test will run contained
+  statement automitically, in a another namespace with everything in
+  this namespace referred.
   It's like a comment, ignores body, yields nil"
   [& _])
 
@@ -104,7 +104,7 @@
                        [(list 'clojure.core/use ''clojure.core)])
           ns-def [(list 'clojure.core/in-ns
                         (list 'quote (unique-ns the-ns)))]
-          use-def (when use-target? 
+          use-def (when use-target?
                     [(list 'clojure.core/use (list 'quote the-ns))])
 ;;; What should we do with private vars? Especially private values?. Should we move them to current ns, or refer them in place. Why do we have a namespace? Should we load everything in current namespace?
           #_#_privates (refer-privates the-ns)]
@@ -157,15 +157,17 @@
 
 (defn read-all [{:keys [input-selector]
                  :as config}]
-  (->> ((fn fun []
-          (let [input (main/with-read-known (server/repl-read request-prompt request-exit))]
-            (cond (= request-prompt input) (recur)
-                  (= request-exit input) nil
-                  :else (let [inputs (input-selector input config)]
-                          (if inputs
-                            (concat inputs (lazy-seq (fun)))
-                            (recur)))))))
-       (into [])))
+  (into []
+        ((fn fun []
+           (let [input (main/with-read-known
+                         (server/repl-read request-prompt
+                                           request-exit))]
+             (cond (= request-prompt input) (recur)
+                   (= request-exit input) nil
+                   :else (let [inputs (input-selector input config)]
+                           (if inputs
+                             (concat inputs (lazy-seq (fun)))
+                             (recur)))))))))
 
 
 (comment
@@ -177,11 +179,8 @@
          (read-all {:input-selector eval-all})))))
 
 (defn eval-print [inputs]
-  (let [read-eval *read-eval*
-        ]
-    
+  (let [read-eval *read-eval*]
     (loop [input (first inputs) inputs (next inputs)]
-      
       (when input
         (pp/pprint input)
         (let [value (binding [*read-eval* read-eval] (eval input))]
@@ -193,21 +192,23 @@
           (println))
         (when inputs (recur (first inputs) (next inputs)))))))
 
-#_(defmacro with-another-classloader [& body]
-  `())
+(defmacro with-another-classloader [& body]
+  `(let [cl# (.getContextClassLoader (Thread/currentThread))]
+     (try (.setContextClassLoader (Thread/currentThread)
+                                  (clojure.lang.DynamicClassLoader. cl#))
+          (do ~@body)
+          (finally (.setContextClassLoader (Thread/currentThread) cl#)))))
+
+(comment
+  (macroexpand-1 '(with-another-classloader (println "Hej") (println "Åhå"))))
 
 (defn repl [{:keys [new-classpath?] :as config}]
-  (let [inputs (read-all config)
-        cl (.getContextClassLoader (Thread/currentThread))]
-    (try
-      (when new-classpath?
-        (.setContextClassLoader (Thread/currentThread)
-                                (clojure.lang.DynamicClassLoader. cl)))
-      (main/with-bindings
-        (eval-print inputs))
-      (finally
-        (when new-classpath?
-          (.setContextClassLoader (Thread/currentThread) cl))))))
+  (let [inputs (read-all config)]
+    (main/with-bindings
+      (if new-classpath?
+        (with-another-classloader
+          (eval-print inputs))
+        (eval-print inputs)))))
 
 (defn as-path [s]
   (str (.. s
@@ -239,7 +240,7 @@
 
 (defn run-eval-all
   "Run content in test-comment of ns in a tearoff namespace in which all of ns is evaluated."
-  
+
   [ns]
   (repl-on ns {:input-selector eval-all
                :new-classpath? true
@@ -254,8 +255,5 @@
   (run-as-use 'tryout)
   (run-eval-all "tryout")
   (run-in-ns 'tryout)
-  
+
   #_no )
-
-
-
