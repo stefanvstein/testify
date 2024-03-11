@@ -7,49 +7,7 @@
    [clojure.pprint :as pp]
    [clojure.string :as str]))
 
-(defn write [print-writers txt]
-  (doseq [w print-writers]
-          (.println w txt)
-          (.flush w)))
 
-(defn close [print-writers]
-  (doseq [w print-writers]
-          (.close w)))
-
-
-
-
-(defn- filter-key [keyfn pred amap]
-  (loop [ret {} es (seq amap)]
-    (if es
-      (if (pred (keyfn (first es)))
-        (recur (assoc ret (key (first es)) (val (first es))) (next es))
-        (recur ret (next es)))
-      ret)))
-
-(defn ns-privates
-  [ns]
-  (let [ns (the-ns ns)]
-    (filter-key val (fn [^clojure.lang.Var v]
-                      (and (instance? clojure.lang.Var v)
-                           (= ns (.ns v))
-                           (not (.isPublic v))))
-                (ns-map ns))))
-
- (defn refer-privates
-  [ns-sym]
-  (let [ns (or (find-ns ns-sym)
-               (throw (new Exception (str "No namespace: " ns-sym))))
-        nsprivate (ns-privates ns)
-        to-do (keys nsprivate)]
-
-    (for [sym to-do]
-
-      (let [v (nsprivate sym)]
-        (when-not v
-          (throw (new java.lang.IllegalAccessError
-                      (str sym " does not exist"))))
-        (list 'def sym v)))))
 
 (defmacro test-comment
   "A test to be run in a repl session. repl-test will run contained
@@ -57,8 +15,6 @@
   this namespace referred.
   It's like a comment, ignores body, yields nil"
   [& _])
-
-(def ^:private ^:dynamic *exit-items* ::disabled)
 
 (defn unique-ns [prefix]
   (let [un (symbol (str prefix "-" (. clojure.lang.RT (nextID))))]
@@ -105,39 +61,35 @@
           ns-def [(list 'clojure.core/in-ns
                         (list 'quote (unique-ns the-ns)))]
           use-def (when use-target?
-                    [(list 'clojure.core/use (list 'quote the-ns))])
-;;; What should we do with private vars? Especially private values?. Should we move them to current ns, or refer them in place. Why do we have a namespace? Should we load everything in current namespace?
-          #_#_privates (refer-privates the-ns)]
-      (concat ns-def
-              clojure-ns
-              refers
-              use-def
+                    [(list 'clojure.core/use (list 'quote the-ns))])]
+      {:forms (concat ns-def
+                      clojure-ns
+                      refers
+                      use-def)})))
 
-              #_privates))))
-
-(defn only-in-ns [form]
+(defn only-ns [form]
   (when (ns? form)
     (let [[_ the-ns] form]
-      [(list 'clojure.core/in-ns
-             (list 'quote the-ns))])))
+      {:forms [(list 'clojure.core/in-ns
+                     (list 'quote the-ns))]})))
 
-(defn test-form [form {:keys [active-comment]}]
+(defn test-form [form {:keys [active-comment] :as config}]
   (when (and (list? form)
              (symbol? (first form))
              (= active-comment (resolve (first form))))
-    (next form)))
+    {:config config :forms (next form)}))
 
 (defn any-form [form]
-  [form])
+  {:forms [form]})
+
 
 (defn require-and-use [input config]
-  (let [ns-input (translate-ns input config)
-        test-input (test-form input config)
-        ]
-    (or
-     ns-input
-     test-input
-     [])))
+    (let [ns-input (translate-ns input config)
+          test-input (test-form input config)]
+      (or
+       ns-input
+       test-input
+       {:forms []})))
 
 (defn eval-all [input config]
   (let [ns-input (translate-ns input config)
@@ -149,48 +101,12 @@
      any-input)))
 
 (defn only-test [input config]
-  (or (only-in-ns input)
-      (test-form input config) []))
+  (or (only-ns input)
+      (test-form input config)
+      {:forms []}))
 
 (def ^:private request-prompt (Object.))
 (def ^:private request-exit (Object.))
-
-(defn read-all [{:keys [input-selector]
-                 :as config}]
-  (into []
-        ((fn fun []
-           (let [input (main/with-read-known
-                         (server/repl-read request-prompt
-                                           request-exit))]
-             (cond (= request-prompt input) (recur)
-                   (= request-exit input) nil
-                   :else (let [inputs (input-selector input config)]
-                           (if inputs
-                             (concat inputs (lazy-seq (fun)))
-                             (recur)))))))))
-
-
-(comment
-  (binding [*ns* *ns*]
-    (with-open [rdr (-> "src/tryout.clj"
-                        io/reader
-                        LineNumberingPushbackReader.)]
-      (binding [*source-path* (str "tryout") *in* rdr]
-         (read-all {:input-selector eval-all})))))
-
-(defn eval-print [inputs]
-  (let [read-eval *read-eval*]
-    (loop [input (first inputs) inputs (next inputs)]
-      (when input
-        (pp/pprint input)
-        (let [value (binding [*read-eval* read-eval] (eval input))]
-          (set! *3 *2)
-          (set! *2 *1)
-          (set! *1 value)
-          (print "=> ")
-          (pp/pprint value)
-          (println))
-        (when inputs (recur (first inputs) (next inputs)))))))
 
 (defmacro with-another-classloader [& body]
   `(let [cl# (.getContextClassLoader (Thread/currentThread))]
@@ -199,16 +115,41 @@
           (do ~@body)
           (finally (.setContextClassLoader (Thread/currentThread) cl#)))))
 
+(defn read-and-eval [config]
+  (let [read-eval *read-eval*]
+    ((fn fun [config]
+         (let [input (main/with-read-known
+                       (server/repl-read request-prompt
+                                         request-exit))]
+           (cond (= request-prompt input) (recur config)
+                 (= request-exit input) nil
+                 :else (let [{config :config inputs :forms :or {config config} :as all} ((:input-selector config) input config)]
+                         (when inputs
+                           (loop [input (first inputs) inputs (next inputs)]
+                             (when input
+                               (pp/pprint input)
+                               (let [value (binding [*read-eval* read-eval] (eval input))]
+                                 (set! *3 *2)
+                                 (set! *2 *1)
+                                 (set! *1 value)
+                                 (print "=> ")
+                                 (pp/pprint value)
+                                 (println))
+                               (when inputs (recur (first inputs) (next inputs)))))
+                           (recur config))))))
+     config)))
+
+
 (comment
   (macroexpand-1 '(with-another-classloader (println "Hej") (println "Åhå"))))
 
 (defn repl [{:keys [new-classpath?] :as config}]
-  (let [inputs (read-all config)]
-    (main/with-bindings
-      (if new-classpath?
-        (with-another-classloader
-          (eval-print inputs))
-        (eval-print inputs)))))
+  
+  (main/with-bindings
+    (if new-classpath?
+      (with-another-classloader
+        (read-and-eval config))
+      (read-and-eval config))))
 
 (defn as-path [s]
   (str (.. s
