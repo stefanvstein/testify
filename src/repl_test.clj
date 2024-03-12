@@ -74,10 +74,25 @@
                      (list 'quote the-ns))]})))
 
 (defn test-form [form {:keys [active-comment] :as config}]
-  (when (and (list? form)
-             (symbol? (first form))
-             (= active-comment (resolve (first form))))
-    {:config config :forms (next form)}))
+
+  (when (and
+         (list? form)
+         (symbol? (first form))
+         (= active-comment (resolve (first form))))
+    (if (:has-run-form config)
+      {:config (assoc config :there-is-more-form true)
+       :forms []}
+      (let [conf (-> config
+                     (update :run-at-form #(if-not % 0 %))
+                     (update :current-form #(if % (inc %) 0)))]
+        (if (= (:current-form conf) (:run-at-form conf))
+          {:config (-> conf
+
+                       (update :run-at-form inc)
+                       (dissoc :current-form)
+                       (assoc :has-run-form true))
+           :forms (next form)}
+          {:config conf :forms []})))))
 
 (defn any-form [form]
   {:forms [form]})
@@ -122,7 +137,7 @@
                        (server/repl-read request-prompt
                                          request-exit))]
            (cond (= request-prompt input) (recur config)
-                 (= request-exit input) nil
+                 (= request-exit input) config
                  :else (let [{config :config inputs :forms :or {config config} :as all} ((:input-selector config) input config)]
                          (when inputs
                            (loop [input (first inputs) inputs (next inputs)]
@@ -139,12 +154,8 @@
                            (recur config))))))
      config)))
 
-
-(comment
-  (macroexpand-1 '(with-another-classloader (println "Hej") (println "Åhå"))))
-
 (defn repl [{:keys [new-classpath?] :as config}]
-  
+
   (main/with-bindings
     (if new-classpath?
       (with-another-classloader
@@ -161,15 +172,19 @@
   (let [ns-str (name ns)
         path (as-path ns-str)
         cl (clojure.lang.RT/baseLoader)]
-    (binding [*ns* *ns*]
-      (with-open [rdr (-> (or (.getResourceAsStream cl (str path ".clj"))
-                              (.getResourceAsStream cl (str path ".cljc"))
-                              (throw (ex-info (str "Can't source for " ns-str)
-                                              {:looking-for (str path ".clj")})))
-                          io/reader
-                          LineNumberingPushbackReader.)]
-        (binding [*source-path* (str ns-str) *in* rdr]
-          (repl config))))))
+   (let [conf  (binding [*ns* *ns*]
+                 (with-open [rdr (-> (or (.getResourceAsStream cl (str path ".clj"))
+                                         (.getResourceAsStream cl (str path ".cljc"))
+                                         (throw (ex-info (str "Can't source for " ns-str)
+                                                         {:looking-for (str path ".clj")})))
+                                     io/reader
+                                     LineNumberingPushbackReader.)]
+                   (binding [*source-path* (str ns-str) *in* rdr]
+                     (repl config))))]
+     (if (:there-is-more-form conf)
+       (recur ns (dissoc conf :there-is-more-form :has-run-form))
+       conf))))
+
 
 (defn run-as-use
   "Run content in test-comment of ns in a tearoff namespace where ns is refered."
