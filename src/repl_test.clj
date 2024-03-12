@@ -19,7 +19,7 @@
         :use-target? true
         :new-classpath? true
         :active-comment (var test-comment)}
-       (repl-on ns)
+       (repl ns)
        (dorun)))
 
 (defn run-eval-all
@@ -28,7 +28,7 @@
   (->> {:input-selector eval-all
         :new-classpath? true
         :active-comment (var test-comment)}
-       (repl-on ns)
+       (repl ns)
        dorun))
 
 (defn run-in-ns
@@ -37,7 +37,7 @@
   (->> {:run-all-cases? true
         :input-selector only-test
         :active-comment (var test-comment)}
-       (repl-on ns)
+       (repl ns)
        dorun))
 
 (comment

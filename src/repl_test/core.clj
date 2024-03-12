@@ -63,57 +63,64 @@
     (let [[_ the-ns] form]
       {:forms [(list 'clojure.core/in-ns
                      (list 'quote the-ns))]})))
+(defn test-form? [active-comment form]
+  (and
+   (list? form)
+   (symbol? (first form))
+   (= active-comment (resolve (first form)))))
 
-(defn test-form [form {:keys [active-comment run-all-cases?] :as config}]
-  (when (and
-         (list? form)
-         (symbol? (first form))
-         (= active-comment (resolve (first form))))
-    (let [conf (-> config
-                   (update :run-at-form #(if-not % 0 %))
-                   (update :current-form #(if % (inc %) 0)))]
-      (cond run-all-cases?
-            {:forms (next form)}
-            (:has-run-form config)
-            {:config (assoc config :there-is-more-form true)
-             :forms []}
-            (= (:current-form conf) (:run-at-form conf))
-            {:config (-> conf
-                         (update :run-at-form inc)
-                         (dissoc :current-form)
-                         (assoc :has-run-form true))
-             :forms (next form)}
-            :else
-            {:config conf :forms []}))))
+(defn inc-or-zero [x]
+  (if x (inc x) 0))
+
+(defn or-zero [x]
+  (or x 0))
+
+(defn executed-context [context]
+(-> context
+    (update :execute-case inc)
+    (dissoc :current-case)
+    (assoc :case-executed? true)))
+
+(defn test-form [form {:keys [active-comment run-all-cases? case-executed?] :as context}]
+  (when (test-form? active-comment form)
+    (let [content (next form) 
+          current (-> context
+                      (update :execute-case or-zero)
+                      (update :current-case inc-or-zero))
+          should-run? (= (:current-case current) 
+                         (:execute-case current))]
+      (cond run-all-cases? {:forms content}
+            case-executed? {:context (assoc context :there-is-more-form true)}
+            should-run? {:context (executed-context current)
+                         :forms content}
+            :else {:context current}))))
 
 (defn any-form [form]
   {:forms [form]})
 
 
-(defn require-and-use [input config]
-    (let [ns-input (translate-ns input config)
-          test-input (test-form input config)]
+(defn require-and-use [input context]
+    (let [ns-input (translate-ns input context)
+          test-input (test-form input context)]
       (or
        ns-input
-       test-input
-       {:forms []})))
+       test-input)))
 
-(defn eval-all [input config]
-  (let [ns-input (translate-ns input config)
-        test-input (test-form input config)
+(defn eval-all [input context]
+  (let [ns-input (translate-ns input context)
+        test-input (test-form input context)
         any-input (any-form input)]
     (or
      ns-input
      test-input
      any-input)))
 
-(defn only-test [input config]
+(defn only-test [input context]
   (or (only-ns input)
-      (test-form input config)
-      {:forms []}))
+      (test-form input context)))
 
-(def request-prompt (Object.))
-(def request-exit (Object.))
+(def ^:static request-prompt (Object.))
+(def ^:static request-exit (Object.))
 
 (defmacro with-another-classloader [& body]
   `(let [cl# (.getContextClassLoader (Thread/currentThread))]
@@ -122,57 +129,71 @@
           (do ~@body)
           (finally (.setContextClassLoader (Thread/currentThread) cl#)))))
 
-(defn read-and-eval [config]
-  (let [read-eval *read-eval*]
-    ((fn fun [config]
-         (let [input (main/with-read-known
-                       (server/repl-read request-prompt
-                                         request-exit))]
-           (cond (= request-prompt input) (recur config)
-                 (= request-exit input) config
-                 :else (let [{config :config inputs :forms :or {config config} :as all} ((:input-selector config) input config)]
-                         (when inputs
-                           (loop [input (first inputs) inputs (next inputs)]
-                             (when input
-                               (pp/pprint input)
-                               (let [value (binding [*read-eval* read-eval] (eval input))]
-                                 (set! *3 *2)
-                                 (set! *2 *1)
-                                 (set! *1 value)
-                                 (print "=> ")
-                                 (pp/pprint value)
-                                 (println))
-                               (when inputs (recur (first inputs) (next inputs)))))
-                           (recur config))))))
-     config)))
+(defn request-prompt? [input]
+  (= request-prompt input))
 
-(defn repl [{:keys [new-classpath?] :as config}]
+(defn request-exit? [input]
+  (= request-exit input))
 
-  (main/with-bindings
-    (if new-classpath?
-      (with-another-classloader
-        (read-and-eval config))
-      (read-and-eval config))))
+(defn read-and-eval [{:as context
+                      :keys [input-selector
+                             read-eval]}]
+  (let [input (main/with-read-known
+                (server/repl-read request-prompt
+                                  request-exit))]
+    (cond (request-prompt? input) (recur context)
+          (request-exit? input) context
+          :else (let [{context :context
+                       inputs :forms
+                       :or {context context
+                            inputs []}} 
+                      (input-selector input context)]
+                  (when inputs
+                    (loop [input (first inputs) inputs (next inputs)]
+                      (when input
+                        (pp/pprint input)
+                        (let [value (binding [*read-eval* read-eval] (eval input))]
+                          (set! *3 *2)
+                          (set! *2 *1)
+                          (set! *1 value)
+                          (print "=> ")
+                          (pp/pprint value)
+                          (println))
+                        (when inputs (recur (first inputs) (next inputs)))))
+                    (recur context))))))
+
+
+(defn repl-with [{:keys [new-classpath?] :as context} rdr ns-str]
+  (with-open [rdr rdr]
+    (binding [*ns* *ns*
+              *source-path* ns-str
+              *in* rdr]
+      (main/with-bindings
+        (let [ctx (assoc context :read-eval *read-eval*)]
+          (if new-classpath?
+            (with-another-classloader
+              (read-and-eval ctx))
+            (read-and-eval ctx)))))))
 
 (defn as-path [s]
   (str (.. s
            (replace \- \_)
            (replace \. \/))))
 
-(defn repl-on
-  [ns config]
-  (let [ns-str (name ns)
-        path (as-path ns-str)
+(defn source-reader [ns-str]
+  (let [path (as-path ns-str)
         cl (clojure.lang.RT/baseLoader)]
-   (let [conf  (binding [*ns* *ns*]
-                 (with-open [rdr (-> (or (.getResourceAsStream cl (str path ".clj"))
-                                         (.getResourceAsStream cl (str path ".cljc"))
-                                         (throw (ex-info (str "Can't source for " ns-str)
-                                                         {:looking-for (str path ".clj")})))
-                                     io/reader
-                                     LineNumberingPushbackReader.)]
-                   (binding [*source-path* (str ns-str) *in* rdr]
-                     (repl config))))]
-     (if (:there-is-more-form conf)
-       (recur ns (dissoc conf :there-is-more-form :has-run-form))
-       conf))))
+    (-> (or (.getResourceAsStream cl (str path ".clj"))
+            (.getResourceAsStream cl (str path ".cljc"))
+            (throw (ex-info (str "Can't source for " ns-str)
+                            {:looking-for (str path ".clj")})))
+        io/reader
+        LineNumberingPushbackReader.)))
+
+(defn repl
+  [ns current-context]
+  (let [ns-str (name ns)
+        context (repl-with current-context (source-reader ns-str) ns-str)]
+    (if (:there-is-more-form context)
+      (recur ns (dissoc context :there-is-more-form :case-executed?))
+      context)))
