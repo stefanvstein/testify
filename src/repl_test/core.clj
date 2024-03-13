@@ -9,7 +9,7 @@
   (let [next-id (. clojure.lang.RT (nextID))
         un (symbol (str prefix "-" next-id))]
     (if-not (find-ns un)
-      un 
+      un
       (recur prefix))))
 
 (defn- make-fun-call [[kv & vs]]
@@ -38,9 +38,11 @@
 
 (defn translate-ns
   "Translates ns instructions like the ns macro, but renames the ns by adding a postfix name. Does not affect *loaded-libs* , doc or any other namespace meta data, nor touch thread binding. nil on any other form"
-  [form {:keys [use-target?]}]
+  [form {:keys [use-target?]
+         :as context}]
   (when (ns? form)
     (let [[_ the-ns & args] form
+          uns (unique-ns the-ns)
           params-without-doc (if (string? (first args))
                                (next args)
                                args)
@@ -50,10 +52,12 @@
           clojure-ns (when-not (some has-clojure-core? fun-values)
                        [(list 'clojure.core/use ''clojure.core)])
           ns-def [(list 'clojure.core/in-ns
-                        (list 'quote (unique-ns the-ns)))]
+                        (list 'quote uns))]
           use-def (when use-target?
                     [(list 'clojure.core/use (list 'quote the-ns))])]
-      {:forms (concat ns-def
+
+      {:context (assoc context :remove-ns uns)
+       :forms (concat ns-def
                       clojure-ns
                       refers
                       use-def)})))
@@ -83,11 +87,11 @@
 
 (defn test-form [form {:keys [active-comment run-all-cases? case-executed?] :as context}]
   (when (test-form? active-comment form)
-    (let [content (next form) 
+    (let [content (next form)
           current (-> context
                       (update :execute-case or-zero)
                       (update :current-case inc-or-zero))
-          should-run? (= (:current-case current) 
+          should-run? (= (:current-case current)
                          (:execute-case current))]
       (cond run-all-cases? {:forms content}
             case-executed? {:context (assoc context :there-is-more-form true)}
@@ -135,6 +139,22 @@
 (defn request-exit? [input]
   (= request-exit input))
 
+(defn eval-print [read-eval input]
+  (let [value (binding [*read-eval* read-eval] (eval input))]
+    (set! *3 *2)
+    (set! *2 *1)
+    (set! *1 value)
+    (print "=> ")
+    (pp/pprint value)
+    (println)))
+
+(defn final [read-eval context]
+  (when-let [rns (:remove-ns context)]
+    (let [form (list 'clojure.core/remove-ns (list 'quote rns))]
+      (pp/pprint form)
+      (eval-print read-eval form)))
+  (dissoc context :remove-ns))
+
 (defn read-and-eval [{:as context
                       :keys [input-selector
                              read-eval]}]
@@ -142,25 +162,22 @@
                 (server/repl-read request-prompt
                                   request-exit))]
     (cond (request-prompt? input) (recur context)
-          (request-exit? input) context
+          (request-exit? input) (final read-eval context)
           :else (let [{context :context
                        inputs :forms
                        :or {context context
-                            inputs []}} 
+                            inputs []}}
                       (input-selector input context)]
-                  (when inputs
-                    (loop [input (first inputs) inputs (next inputs)]
-                      (when input
-                        (pp/pprint input)
-                        (let [value (binding [*read-eval* read-eval] (eval input))]
-                          (set! *3 *2)
-                          (set! *2 *1)
-                          (set! *1 value)
-                          (print "=> ")
-                          (pp/pprint value)
-                          (println))
-                        (when inputs (recur (first inputs) (next inputs)))))
-                    (recur context))))))
+                  (doseq [input inputs]
+                    (pp/pprint input)
+                    (try
+                      (eval-print read-and-eval input)
+                      (catch Exception e
+                        (when-not (:keep-ns-on-exception context)
+                          (final read-eval context))
+                        (throw e))))
+
+                  (recur context)))))
 
 
 (defn repl-with [{:keys [new-classpath?] :as context} rdr ns-str]
@@ -194,6 +211,7 @@
   [ns current-context]
   (let [ns-str (name ns)
         context (repl-with current-context (source-reader ns-str) ns-str)]
+
     (if (:there-is-more-form context)
       (recur ns (dissoc context :there-is-more-form :case-executed?))
       context)))
