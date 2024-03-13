@@ -1,5 +1,5 @@
 (ns repl-test
-  (:require [repl-test.core :refer :all]))
+  (:require [repl-test.core :as t]))
 
 
 
@@ -14,34 +14,43 @@
 
 (defn run-as-use
   "Run content in test-comment of ns in a tearoff namespace where ns is refered."
-  [ns]
-  (->> {:input-selector require-and-use
-        :use-target? true
-        :new-classpath? true
-        :active-comment (var test-comment)}
-       (repl ns)
-       (dorun)))
+  ([ns] 
+   (run-as-use ns {}))
+  ([ns options]
+   (->> (merge {:input-selector t/require-and-use
+                :use-target? true
+                :new-classpath? true
+                :active-comment (var test-comment)}
+               options)
+        (t/repl ns)
+        (dorun))))
 
 (defn run-eval-all
   "Run content in test-comment of ns in a tearoff namespace in which all of ns is evaluated."
-  [ns]
-  (->> {:input-selector eval-all
-        :new-classpath? true
-        :active-comment (var test-comment)}
-       (repl ns)
-       dorun))
+  ([ns]
+   (run-eval-all ns {}))
+  ([ns options]
+   (->> (merge {:input-selector t/eval-all
+                :new-classpath? true
+                :active-comment (var test-comment)}
+               options)
+        (t/repl ns)
+        dorun)))
 
 (defn run-in-ns
   "Run content in test-comment of ns"
-  [ns]
-  (->> {:run-all-cases? true
-        :input-selector only-test
-        :active-comment (var test-comment)}
-       (repl ns)
-       dorun))
+  ([ns options]
+   (->> (merge {:run-all-cases? true
+                :input-selector t/only-test
+                :active-comment (var test-comment)}
+               options)
+        (t/repl ns)
+        dorun))
+  ([ns]
+   (run-in-ns ns {})))
 
 (comment
-  (run-as-use 'tryout)
+  (run-as-use 'tryout {:keep-ns-on-exception true})
   (run-eval-all "tryout")
   (run-in-ns 'tryout)
 
