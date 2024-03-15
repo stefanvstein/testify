@@ -84,7 +84,7 @@ A test-case can easily use clojure.test/is to verify facts along the way, and th
 ```
 Automated evaluation and their result is printed to *out*, including preparation like evaluating namespace. It should be easy to understand automated evaluation.
 
-The run-as-use and run-eval-all alternatives uses an isolated classloader, discarded after the run.
+The run-as-use and run-eval-all alternatives uses an isolated classloader, discarded after the run. The tools expectes a leading ns form, but translates it to a in-ns, followed by individual requirements. The resulting namespace is not considered a loaded lib.
 
 This tool is heavily influenced by Cognitects Transcriptor library, which evaluates repl files in a similar fashion, but here it's evaluation of test-comments withing regular clojure source files, that your favorite dev environment already understand.
 
