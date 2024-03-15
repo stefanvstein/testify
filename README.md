@@ -24,8 +24,34 @@ With repl-test you automate evaluation of similar comment expression, named test
   ;;space for more experimental and administrative tasks
   )
 ```
+You run content of test-comment expressions with repl-test by supplying the namespace to one of the three functions `run-as-use`, `run-eval-all` or `run-in-ns`. Every step and its result will be printed to *out, here in a tear-off namespace, indicated with a seemingly random namespace. 
+```
+(clojure.core/in-ns 'project.testcase-9244)
+=> #namespace[project.testcase-9244]
 
-You run content of test-comment expressions with repl-test by supplying the namespace to one of the three functions `run-as-use`, `run-eval-all` or `run-in-ns`. Every step and its result will be printed to *out*   
+(clojure.core/use 'clojure.core)
+=> nil
+
+(clojure.core/require
+ '[repl-test :refer [test-comment run-as-use]]
+ '[clojure.test :refer [deftest is]])
+=> nil
+
+(clojure.core/use 'project.testcase)
+=> nil
+
+(def a 2)
+=> #'project.testcase-9244/a
+
+(+ a 3)
+=> 5
+
+(is (= 5 *1))
+=> true
+
+(clojure.core/remove-ns 'project.testcase-9244)
+=> #namespace[project.testcase-9244]
+```
 
 ```clojure
 (ns project.testcase
@@ -33,7 +59,7 @@ You run content of test-comment expressions with repl-test by supplying the name
   
 (run-as-use 'project.testcase)
 ```
-`run-as-use` runs content of each test-comment in a new tear-off namespace and refer to the current namespace as referring it as use. All public functions are available. The tear-off namespace is deleted after each test-comment
+`run-as-use` runs content of each test-comment in a new tear-off namespace and refer to the current namespace as referring it as use, as depicted above. All public functions are available. The tear-off namespace is deleted after each test-comment
 
 `run-eval-all` evaluates all forms in namespace in another tear-off namespace. All privates are available, except that they belong to the temporary tear-off namespace. The tear-off is removed after each test-comment. The whole namespace is evaluated before test-comments are evaluated. The test-comment is simply a comment during initial evaluation.
 
