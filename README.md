@@ -24,7 +24,7 @@ With repl-test you automate evaluation of similar comment expression, named test
   ;;space for more experimental and administrative tasks
   )
 ```
-You run content of test-comment expressions with repl-test by supplying the namespace to one of the three functions `run-as-use`, `run-eval-all` or `run-in-ns`. Every step and its result will be printed to *out, here in a tear-off namespace, indicated with a seemingly random namespace. 
+You run content of test-comment expressions with repl-test by supplying the namespace to one of the three functions `run-as-use`, `run-eval-all` or `run-in-ns`. Every step and its result will be printed to *out*, here in a tear-off namespace, indicated by uniqueness added to the namespace name. 
 ```
 (clojure.core/in-ns 'project.testcase-9244)
 => #namespace[project.testcase-9244]
@@ -33,8 +33,7 @@ You run content of test-comment expressions with repl-test by supplying the name
 => nil
 
 (clojure.core/require
- '[repl-test :refer [test-comment run-as-use]]
- '[clojure.test :refer [deftest is]])
+ '[repl-test :refer [test-comment run-as-use]])
 => nil
 
 (clojure.core/use 'project.testcase)
@@ -45,9 +44,6 @@ You run content of test-comment expressions with repl-test by supplying the name
 
 (+ a 3)
 => 5
-
-(is (= 5 *1))
-=> true
 
 (clojure.core/remove-ns 'project.testcase-9244)
 => #namespace[project.testcase-9244]
@@ -63,7 +59,7 @@ You run content of test-comment expressions with repl-test by supplying the name
 
 `run-eval-all` evaluates all forms in namespace in another tear-off namespace. All privates are available, except that they belong to the temporary tear-off namespace. The tear-off is removed after each test-comment. The whole namespace is evaluated before test-comments are evaluated. The test-comment is simply a comment during initial evaluation.
 
-`run-in-ns` runs in the already existing name space, not in a tear-off. The namespace remains, possibly altered, afterwards. This is pretty much the same as evaluating step by step manually. 
+`run-in-ns` runs in the already existing name space, not in a tear-off. The namespace remains, possibly altered, afterwards. This is pretty much the same as evaluating step by step manually as we usually do, but not always that great for automated testing. There's classloader isolation and no cleaning up afterwards. 
 
 Since these tests are automated, any exception thrown will stop the process. All remaining test-comments will be ignored on a thrown exception.
 
@@ -84,9 +80,9 @@ A test-case can easily use clojure.test/is to verify facts along the way, and th
 ```
 Automated evaluation and their result is printed to *out*, including preparation like evaluating namespace. It should be easy to understand automated evaluation.
 
-The run-as-use and run-eval-all alternatives uses an isolated classloader, discarded after the run. The tools expectes a leading ns form, but translates it to a in-ns, followed by individual requirements. The resulting namespace is not considered a loaded lib.
+The `run-as-use` and `run-eval-all` alternatives uses an isolated classloader, discarded after the run. The tools expectes a leading ns form, but translates it to a in-ns, followed by individual requirements. The resulting namespace is not considered a loaded lib, by Clojure.
 
-This tool is heavily influenced by Cognitects Transcriptor library, which evaluates repl files in a similar fashion, but here it's evaluation of test-comments withing regular clojure source files, that your favorite dev environment already understand.
+This tool is heavily influenced by Cognitects Transcriptor library, which evaluates repl files in a similar fashion, which is not regular clojure source files, that your favorite dev environment already understand.
 
 # License
 Eclipse Public License, same as Clojure. https://www.eclipse.org/legal/epl-v10.html
