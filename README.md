@@ -26,7 +26,7 @@ With repl-test you automate evaluation of similar comment expression, named test
   
 
 ```
-You run content of test-comment expressions with repl-test by supplying the namespace to one of the three functions `run-as-use`, `run-eval-all` or `run-in-ns`. Every step and its result will be printed to *out*, here in a tear-off namespace, indicated by uniqueness added to the namespace name. 
+You run content of test-comment expressions with repl-test by supplying the namespace to one of the three functions `run-as-use`, `run-eval-all` or `run-in-ns`. Every step and its result will be printed to \*out\*, here in a tear-off namespace, indicated by uniqueness added to the namespace name. 
 ```
 (clojure.core/in-ns 'project.testcase-9244)
 => #namespace[project.testcase-9244]
@@ -74,7 +74,7 @@ A test-case can easily use clojure.test/is to verify facts along the way, and th
 (deftest test-the-test
   (run-as-use 'project.testcase))
 ```
-Automated evaluation and their result is printed to *out*, including preparation like evaluating namespace. It should be easy to understand automated evaluation.
+Automated evaluation and their result is printed to \*out\*, including preparation like evaluating namespace. It should be easy to understand automated evaluation.
 
 The `run-as-use` and `run-eval-all` alternatives uses an isolated classloader, discarded after the run. The tools expectes a leading ns form, but translates it to a in-ns, followed by individual requirements. The resulting namespace is not considered a loaded lib, by Clojure.
 
