@@ -28,7 +28,7 @@ With repl-test you automate evaluation of similar comment expression, named test
 ```
 You run content of top level test-comment expressions with repl-test by supplying the namespace to one of the three functions `run-as-use`, `run-eval-all` or `run-in-ns`. 
 
-Note that only the content of top level test-comments in the source file will be evaluated. Nested test-comments will just be like comments. Other parts of the the source file will be considered before evaluating the test-comments, slightly different depending on run method. The test-comments is thereafter evaluated from top to bottom. 
+Note that only the content of top level test-comments in the source file will be evaluated. Nested test-comments will just be like comments. Other parts of the the source file will be considered before evaluating the test-comments, slightly different depending on run method. The test-comments are thereafter evaluated from top to bottom. 
 
 Every step and its result will be printed to \*out\*, here in a tear-off namespace, indicated by uniqueness added to the namespace name.
 ```
