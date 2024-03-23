@@ -76,7 +76,7 @@ A test-case can easily use clojure.test/is to verify facts along the way, and th
 ```
 Automated evaluation and their result is printed to \*out\*, including preparation like evaluating namespace. It should be easy to understand automated evaluation.
 
-The `run-as-use` and `run-eval-all` alternatives uses an isolated classloader, discarded after the run. The tools expectes a leading ns form, but translates it to a in-ns, followed by individual requirements. The resulting namespace is not considered a loaded lib, by Clojure.
+The `run-as-use` and `run-eval-all` alternatives uses an isolated classloader, discarded after the run. The tools expects a leading ns form, but translates it to a in-ns, followed by individual requirements. The resulting namespace is not considered a loaded lib, by Clojure.
 
 This tool is heavily influenced by Cognitects Transcriptor library, which evaluates repl files in a similar fashion, which is not regular clojure source files, that your favorite dev environment already understand.
 
@@ -86,11 +86,11 @@ The run- functions takes a optional map of options:
 
 `:test-comment` is a var of the macro used as test comment default value `#'repl-test/test-comment`. It can be changed to make selective runs in the same namespace. 
 
-Note that run-eval-all will evaluate the whole file representing the name space into a new anonymous namespace. If the optional test comment macro is defined here, it will most likely not match that when defined in test-comment option. Just put additional test-comment definitions in antorher namespace when using run-eval-all. 
+*Note that `run-eval-all` will evaluate the whole file representing the name space into a new anonymous namespace. If the optional test comment macro is defined here, it will most likely not match that when defined in test-comment option. Just put additional test-comment definitions in another namespace when using `run-eval-all`.* 
 
-`:new-classpath?` is a boolean telling whether each test-comment should run in a new class-loader, so that locally defined types are ommited after each test comment. This is set for `run-as-use` and `run-eval-all`.
+`:new-classpath?` is a boolean telling whether each test-comment should run in a new class-loader, so that locally defined types are omitted after each test comment. This is set for `run-as-use` and `run-eval-all`.
 
-`:keep-ns-on-exception?` is a boolean that when set ommits removing any tear-off name space on thrown exception. Can be used to investigate circumstances  
+`:keep-ns-on-exception?` is a boolean that when set omits removing any tear-off name space on thrown exception. Can be used to investigate circumstances
 
 The other options `:execute-case`, `:current-case`, `:case-executed?`, `:forms`, `:there-is-more-form`, `:context` and `:remove-ns` are used internally and is subject to change
 
