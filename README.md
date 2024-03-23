@@ -80,6 +80,20 @@ The `run-as-use` and `run-eval-all` alternatives uses an isolated classloader, d
 
 This tool is heavily influenced by Cognitects Transcriptor library, which evaluates repl files in a similar fashion, which is not regular clojure source files, that your favorite dev environment already understand.
 
+# Options
+
+The run- functions takes a optional map of options: 
+
+`:test-comment` is a var of the macro used as test comment default value `#'repl-test/test-comment`. It can be changed to make selective runs in the same namespace. 
+
+Note that run-eval-all will evaluate the whole file representing the name space into a new anonymous namespace. If the optional test comment macro is defined here, it will most likely not match that when defined in test-comment option. Just put additional test-comment definitions in antorher namespace when using run-eval-all. 
+
+`:new-classpath?` is a boolean telling whether each test-comment should run in a new class-loader, so that locally defined types are ommited after each test comment. This is set for `run-as-use` and `run-eval-all`.
+
+`:keep-ns-on-exception?` is a boolean that when set ommits removing any tear-off name space on thrown exception. Can be used to investigate circumstances  
+
+The other options `:execute-case`, `:current-case`, `:case-executed?`, `:forms`, `:there-is-more-form`, `:context` and `:remove-ns` are used internally and is subject to change
+
 # License
 Eclipse Public License, same as Clojure. https://www.eclipse.org/legal/epl-v10.html
 

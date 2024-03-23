@@ -67,11 +67,11 @@
     (let [[_ the-ns] form]
       {:forms [(list 'clojure.core/in-ns
                      (list 'quote the-ns))]})))
-(defn test-form? [active-comment form]
+(defn test-form? [test-comment form]
   (and
    (list? form)
    (symbol? (first form))
-   (= active-comment (resolve (first form)))))
+   (= test-comment (resolve (first form)))))
 
 (defn inc-or-zero [x]
   (if x (inc x) 0))
@@ -85,8 +85,9 @@
     (dissoc :current-case)
     (assoc :case-executed? true)))
 
-(defn test-form [form {:keys [active-comment run-all-cases? case-executed?] :as context}]
-  (when (test-form? active-comment form)
+(defn test-form [form {:keys [test-comment run-all-cases? case-executed?] 
+                       :as context}]
+  (when (test-form? test-comment form)
     (let [content (next form)
           current (-> context
                       (update :execute-case or-zero)
@@ -173,7 +174,7 @@
                     (try
                       (eval-print read-and-eval input)
                       (catch Exception e
-                        (when-not (:keep-ns-on-exception context)
+                        (when-not (:keep-ns-on-exception? context)
                           (final read-eval context))
                         (throw e))))
 

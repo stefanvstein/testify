@@ -20,7 +20,7 @@
    (->> (merge {:input-selector t/require-and-use
                 :use-target? true
                 :new-classpath? true
-                :active-comment (var test-comment)}
+                :test-comment (var test-comment)}
                options)
         (t/repl ns)
         (dorun))))
@@ -32,7 +32,7 @@
   ([ns options]
    (->> (merge {:input-selector t/eval-all
                 :new-classpath? true
-                :active-comment (var test-comment)}
+                :test-comment (var test-comment)}
                options)
         (t/repl ns)
         dorun)))
@@ -42,16 +42,11 @@
   ([ns options]
    (->> (merge {:run-all-cases? true
                 :input-selector t/only-test
-                :active-comment (var test-comment)}
+                :test-comment (var test-comment)}
                options)
         (t/repl ns)
         dorun))
   ([ns]
    (run-in-ns ns {})))
 
-(comment
-  (run-as-use 'tryout {:keep-ns-on-exception true})
-  (run-eval-all "tryout")
-  (run-in-ns 'tryout)
 
-  #_no)
