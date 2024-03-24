@@ -1,5 +1,4 @@
-# Testify
-## Evaluate Clojure comments automatically
+# Testify - Evaluate Clojure comments automatically
 
 <img align="right" src="robby.jpg" width="150" height="150">
 
@@ -121,7 +120,7 @@ The `eval-as-use` and `eval-all` alternatives uses an isolated classloader, disc
 
 This tool is heavily influenced by Cognitects Transcriptor library, which evaluates repl files in a similar fashion, which is not regular clojure source files, that your favorite dev environment already understand.
 
-# Options
+## Options
 
 The eval- functions takes a optional map of options: 
 
