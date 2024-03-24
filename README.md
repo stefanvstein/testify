@@ -123,7 +123,7 @@ This tool is heavily influenced by Cognitects Transcriptor library, which evalua
 
 # Options
 
-The run- functions takes a optional map of options: 
+The eval- functions takes a optional map of options: 
 
 `:test-comment` is a var of the macro used as test comment default value `#'testify/test-comment`. It can be changed to make selective runs in the same namespace. 
 
