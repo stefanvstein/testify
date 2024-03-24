@@ -1,9 +1,9 @@
 (ns test
   (:require [clojure.test :refer [deftest 
                                   is]]
-            [repl-test :refer [run-as-use
-                               run-eval-all
-                               run-in-ns]]
+            [testify :refer [eval-as-use
+                             eval-all
+                             eval-in-ns]]
             [test-macros :refer [use-test
                                  eval-test
                                  in-ns-test]]))
@@ -42,6 +42,6 @@
 
 (deftest tests
   (reset! a 0)
-  (run-as-use 'test {:test-comment #'use-test})
-  (run-eval-all 'test {:test-comment #'eval-test})
-  (run-in-ns 'test {:test-comment #'in-ns-test}))
+  (eval-as-use 'test {:test-comment #'use-test})
+  (eval-all 'test {:test-comment #'eval-test})
+  (eval-in-ns 'test {:test-comment #'in-ns-test}))

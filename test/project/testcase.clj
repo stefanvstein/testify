@@ -1,5 +1,5 @@
 (ns project.testcase
-  (:require [repl-test :refer [test-comment run-as-use]]
+  (:require [testify :refer [test-comment run-as-use]]
             [clojure.test :refer [deftest is]]))
 
 (test-comment

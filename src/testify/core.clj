@@ -1,4 +1,4 @@
-(ns repl-test.core
+(ns testify.core
   (:require
    [clojure.core.server :as server]
    [clojure.java.io :as io]
