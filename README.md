@@ -87,7 +87,35 @@ A test-case can easily use clojure.test/is to verify facts along the way, and th
 (deftest test-the-test
   (eval-as-use 'project.testcase))
 ```
-Automated evaluation and their result is printed to \*out\*, including preparation like evaluating namespace. It should be easy to understand automated evaluation.
+Automated evaluation and their result is printed to \*out\*, including preparation like evaluating namespace. It should be easy to understand automated evaluation:
+
+```
+(clojure.core/in-ns 'project.testcase-9379)
+=> #namespace[project.testcase-9379]
+
+(clojure.core/use 'clojure.core)
+=> nil
+
+(clojure.core/require
+ '[testify :refer [test-comment eval-as-use]]
+ '[clojure.test :refer [deftest is]])
+=> nil
+
+(clojure.core/use 'project.testcase)
+=> nil
+
+(def a 2)
+=> #'project.testcase-9379/a
+
+(+ a 3)
+=> 5
+
+(is (= 5 *1))
+=> true
+
+(clojure.core/remove-ns 'project.testcase-9379)
+=> #namespace[project.testcase-9379]
+```
 
 The `eval-as-use` and `eval-all` alternatives uses an isolated classloader, discarded after the run. The tools expects files with a leading ns form, but translates it to a in-ns, followed by individual requirements. The resulting namespace is not considered a loaded lib by Clojure.
 

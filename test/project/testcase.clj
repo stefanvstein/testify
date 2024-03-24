@@ -1,5 +1,5 @@
 (ns project.testcase
-  (:require [testify :refer [test-comment run-as-use]]
+  (:require [testify :refer [test-comment eval-as-use]]
             [clojure.test :refer [deftest is]]))
 
 (test-comment
@@ -8,4 +8,4 @@
   (is (= 5 *1)))
 
 (deftest test-the-test
-  (run-as-use 'project.testcase))
+  (eval-as-use 'project.testcase))
