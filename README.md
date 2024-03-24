@@ -60,7 +60,7 @@ There are different evaluations functions, `eval-in-ns`, `eval-as-use` and `eval
 
 `eval-as-use` evaluates content of each test-comment in a new tear-off namespace and refer to the current namespace as referring by use, as depicted blow. All public functions are available. The tear-off namespace is deleted after each test-comment
 
-`run-eval-all` evaluates all forms in namespace in another tear-off namespace. All vars are available, including private, except that they belong to the new temporary tear-off namespace. The tear-off is removed after each test-comment. The whole namespace is evaluated before test-comments are evaluated. The test-comment is simply a comment during initial evaluation.
+`eval-all` evaluates all forms in namespace in another tear-off namespace. All vars are available, including private, except that they belong to the new temporary tear-off namespace. The tear-off is removed after each test-comment. The whole namespace is evaluated before test-comments are evaluated. The test-comment is simply a comment during initial evaluation.
 
 
 Since these tests are automated, any exception thrown will stop the process. All remaining test-comments will be ignored up on a thrown exception.

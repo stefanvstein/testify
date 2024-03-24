@@ -1,7 +1,12 @@
 (ns test
-  (:require [clojure.test :refer [deftest is]]
-            [repl-test :refer :all]
-            [test-macros :refer :all]))
+  (:require [clojure.test :refer [deftest 
+                                  is]]
+            [repl-test :refer [run-as-use
+                               run-eval-all
+                               run-in-ns]]
+            [test-macros :refer [use-test
+                                 eval-test
+                                 in-ns-test]]))
 
 (def a (atom 0))
 

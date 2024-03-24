@@ -1,16 +1,20 @@
 (ns repl-test.core
-  (:import [clojure.lang LineNumberingPushbackReader])
-  (:require [clojure.core.server :as server]
-            [clojure.java.io :as io]
-            [clojure.main :as main]
-            [clojure.pprint :as pp]))
+  (:require
+   [clojure.core.server :as server]
+   [clojure.java.io :as io]
+   [clojure.main :as main]
+   [clojure.pprint :as pp])
+  (:import
+   [clojure.lang LineNumberingPushbackReader]))
 
-(defn unique-ns [prefix]
-  (let [next-id (. clojure.lang.RT (nextID))
-        un (symbol (str prefix "-" next-id))]
-    (if-not (find-ns un)
-      un
-      (recur prefix))))
+(defn unique-ns [context prefix]
+  (if-let [fun (:unique-ns context)]
+    (fun prefix)
+    (let [next-id (. clojure.lang.RT (nextID))
+          un (symbol (str prefix "-" next-id))]
+      (if-not (find-ns un)
+        un
+        (recur context prefix)))))
 
 (defn- make-fun-call [[kv & vs]]
   (let [fun (symbol (str "clojure.core/"
@@ -37,12 +41,11 @@
        (symbol? (second form))))
 
 (defn translate-ns
-  "Translates ns instructions like the ns macro, but renames the ns by adding a postfix name. Does not affect *loaded-libs* , doc or any other namespace meta data, nor touch thread binding. nil on any other form"
   [form {:keys [use-target?]
          :as context}]
   (when (ns? form)
     (let [[_ the-ns & args] form
-          uns (unique-ns the-ns)
+          uns (unique-ns context the-ns)
           params-without-doc (if (string? (first args))
                                (next args)
                                args)
