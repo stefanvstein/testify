@@ -1,6 +1,6 @@
 # Testify
 ## Evaluate Clojure comments automatically
-
+<img align="right" src="robby.jpg">
 Your `comment` became an usable snippets of code. 
 **Testify** turns these comments into automatically evaluated scripts, while remainig embedded.
 You rename the `comment` to `test-comment`, and evaluate `(eval-in-ns 'your-namespace)` to automate re-evaluation.
