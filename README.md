@@ -87,7 +87,7 @@ A test-case can easily use clojure.test/is to verify facts along the way, and th
 (deftest test-the-test
   (eval-as-use 'project.testcase))
 ```
-Automated evaluation and their result is printed to \*out\*, including preparation like evaluating namespace. It should be easy to understand automated evaluation:
+Automated evaluation and their result is printed to \*out\*, including preparation like evaluating namespace. It should be easy to understand automated evaluation. Note tear-off namespace `project.testcase-9379`:
 
 ```
 (clojure.core/in-ns 'project.testcase-9379)
