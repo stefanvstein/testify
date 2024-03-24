@@ -1,6 +1,12 @@
-# Repl Test
-**Running Clojure code comments, possibly in an anonymous namespace**
+# Testify
+## Evaluate Clojure comments automatically
 
+Your `comment` became an usable snippets of code. 
+**Testify** turns these comments into automatically evaluated scripts, while remainig embedded.
+You rename the `comment` to `test-comment`, and evaluate `(eval-in-ns 'your-namespace)` to automate re-evaluation. 
+
+## How
+ 
 You are probably used to evaluate code manually within comment expressions, Rich comments. 
 ```clojure
 (comment 
@@ -8,58 +14,46 @@ You are probably used to evaluate code manually within comment expressions, Rich
   (+ a 3))
 ```
 
-You want to elaborate with code by evaluating it, step by step, as you program. It's also likely that you use comment expressions to do some administrative tasks, like poking in a database or similar.
+You want to elaborate with code by evaluating these comments, step by step, as you program. It's also likely that you use comment expressions to do some administrative tasks, like poking in a database or similar.
 
-With repl-test you automate evaluation of similar comment expression, named test-comment rather than comment. The test-comment macro is equal to the comment macro, which both simply ignore its body. As soon you have a comment expression which you want to evaluate automatically, perhaps as a test, but not your administrative routines, you simply rename the comment to test-comment.
+With Testify you automate evaluation of similar comment expressions, named test-comment rather than comment. The test-comment macro is equal to the comment macro, which both ignore its body. As soon you have a comment expression which you want to evaluate automatically, perhaps as a test, you simply rename the comment to test-comment.
 
 ```clojure
 (ns project.testcase
-  (:require [repl-test :refer [test-comment run-as-use]]))
+  (:require [testify :refer [test-comment eval-in-ns]]))
   
 (test-comment 
   (def a 2)
   (+ a 3))
   
 (comment 
-  ;;space for more experimental and administrative tasks
-  (run-as-use 'project.testcase))
-  
-
+  ;; space for more experimental and administrative tasks,
+  ;; like evaluating test-comments
+  (eval-in-ns 'project.testcase))
 ```
-You run content of top level test-comment expressions with repl-test by supplying the namespace to one of the three functions `run-as-use`, `run-eval-all` or `run-in-ns`. 
+You evaluate content of top level test-comment expressions by supplying the namespace to one of the three functions `eval-as-use`, `eval-all` or `eval-in-ns`. 
 
-Note that only the content of top level test-comments in the source file will be evaluated. Nested test-comments will just be like comments. Other parts of the the source file will be considered before evaluating the test-comments, slightly different depending on run method. The test-comments are thereafter evaluated from top to bottom. 
+Note that only the content of top level test-comments in the source file will be evaluated. Nested test-comments will just be like ordinary comments. Other parts of the the source file will be considered before evaluating the test-comments, slightly different depending on evaluation method. The test-comments are thereafter evaluated from top to bottom as they appear. 
 
-Every step and its result will be printed to \*out\*, here in a tear-off namespace, indicated by uniqueness added to the namespace name.
+Every step and its result will be printed to \*out\*:
 ```
-(clojure.core/in-ns 'project.testcase-9244)
-=> #namespace[project.testcase-9244]
-
-(clojure.core/use 'clojure.core)
-=> nil
-
-(clojure.core/require
- '[repl-test :refer [test-comment run-as-use]])
-=> nil
-
-(clojure.core/use 'project.testcase)
-=> nil
+(clojure.core/in-ns 'project.testcase)
+=> #namespace[project.testcase]
 
 (def a 2)
-=> #'project.testcase-9244/a
+=> #'project.testcase/a
 
 (+ a 3)
 => 5
-
-(clojure.core/remove-ns 'project.testcase-9244)
-=> #namespace[project.testcase-9244]
 ```
+There are different evaluations functions, `eval-in-ns`, `eval-as-use` and `eval-all`, behaving slightly different:
 
-`run-as-use` runs content of each test-comment in a new tear-off namespace and refer to the current namespace as referring it as use, as depicted above. All public functions are available. The tear-off namespace is deleted after each test-comment
+`eval-in-ns` evaluates the content of the test-comments in its already existing namespace. This is pretty much the same as evaluating step by step manually as we usually do, but not always that great for automated testing. The namespace remains, possibly altered, afterwards. 
 
-`run-eval-all` evaluates all forms in namespace in another tear-off namespace. All privates are available, except that they belong to the temporary tear-off namespace. The tear-off is removed after each test-comment. The whole namespace is evaluated before test-comments are evaluated. The test-comment is simply a comment during initial evaluation.
+`eval-as-use` evaluates content of each test-comment in a new tear-off namespace and refer to the current namespace as referring it as use, as depicted blow. All public functions are available. The tear-off namespace is deleted after each test-comment
 
-`run-in-ns` runs in the already existing name space, not in a tear-off. The namespace remains, possibly altered, afterwards. This is pretty much the same as evaluating step by step manually as we usually do, but not always that great for automated testing. There's classloader isolation and no cleaning up afterwards. 
+`run-eval-all` evaluates all forms in namespace in another tear-off namespace. All vars are available, including private, except that they belong to the new temporary tear-off namespace. The tear-off is removed after each test-comment. The whole namespace is evaluated before test-comments are evaluated. The test-comment is simply a comment during initial evaluation.
+
 
 Since these tests are automated, any exception thrown will stop the process. All remaining test-comments will be ignored on a thrown exception.
 
