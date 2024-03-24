@@ -1,7 +1,7 @@
 # Testify
 ## Evaluate Clojure comments automatically
 
-<img align="right" src="robby.jpg">
+<img align="right" src="robby.jpg" width="150" height="150">
 
 Your `comment` became an usable snippets of code. 
 **Testify** turns these comments into automatically evaluated scripts, while remainig embedded.
