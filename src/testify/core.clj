@@ -7,14 +7,14 @@
   (:import
    [clojure.lang LineNumberingPushbackReader]))
 
-(defn unique-ns [context prefix]
-  (if-let [fun (:unique-ns (:config context))]
-    (fun prefix)
+(defn unique-ns [make-ns prefix]
+  (if make-ns
+    (make-ns prefix)
     (let [next-id (. clojure.lang.RT (nextID))
           un (symbol (str prefix "-" next-id))]
       (if-not (find-ns un)
         un
-        (recur context prefix)))))
+        (recur nil prefix)))))
 
 (defn- make-fun-call [[kv & vs]]
   (let [fun (symbol (str "clojure.core/"
@@ -41,11 +41,11 @@
        (symbol? (second form))))
 
 (defn translate-ns
-  [form {{:keys [use-target?]} :config
+  [form {options :options
          :as context}]
   (when (ns? form)
     (let [[_ the-ns & args] form
-          uns (unique-ns context the-ns)
+          uns (unique-ns (:unique-ns options) the-ns)
           params-without-doc (if (string? (first args))
                                (next args)
                                args)
@@ -56,7 +56,7 @@
                        [(list 'clojure.core/use ''clojure.core)])
           ns-def [(list 'clojure.core/in-ns
                         (list 'quote uns))]
-          use-def (when use-target?
+          use-def (when (:use-target? options)
                     [(list 'clojure.core/use (list 'quote the-ns))])]
 
       {:context (assoc context :remove-ns uns)
@@ -70,6 +70,7 @@
     (let [[_ the-ns] form]
       {:forms [(list 'clojure.core/in-ns
                      (list 'quote the-ns))]})))
+
 (defn test-form? [test-comment form]
   (and
    (list? form)
@@ -88,10 +89,9 @@
     (dissoc :current-case)
     (assoc :case-executed? true)))
 
-(defn test-form [form {{:keys [test-comment]} :config
-                       :keys [run-all-cases? case-executed?] 
+(defn test-form [form {:keys [options run-all-cases? case-executed?]
                        :as context}]
-  (when (test-form? test-comment form)
+  (when (test-form? (:test-comment options) form)
     (let [content (next form)
           current (-> context
                       (update :execute-case or-zero)
@@ -161,10 +161,11 @@
   (dissoc context :remove-ns))
 
 (defn read-and-eval [{:as context
-                      read-eval :read-eval
-                      {input-selector :input-selector
-                       :as config} :config}]
-  (let [input (main/with-read-known
+                      options :options}]
+  
+  (let [read-eval (:read-eval context)
+        input-selector (:input-selector options)
+        input (main/with-read-known
                 (server/repl-read request-prompt
                                   request-exit))]
     (cond (request-prompt? input) (recur context)
@@ -179,14 +180,14 @@
                     (try
                       (eval-print read-and-eval input)
                       (catch Exception e
-                        (when-not (:keep-ns-on-exception? config)
+                        (when-not (:keep-ns-on-exception? options)
                           (final read-eval context))
                         (throw e))))
 
                   (recur context)))))
 
 
-(defn repl-with [{{:keys [new-classpath?]} :config 
+(defn repl-with [{options :options
                   :as context} rdr ns-str]
   (with-open [rdr rdr]
     (binding [*ns* *ns*
@@ -194,7 +195,7 @@
               *in* rdr]
       (main/with-bindings
         (let [ctx (assoc context :read-eval *read-eval*)]
-          (if new-classpath?
+          (if (:new-classpath? options)
             (with-another-classloader
               (read-and-eval ctx))
             (read-and-eval ctx)))))))

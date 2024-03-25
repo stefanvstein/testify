@@ -22,7 +22,7 @@
                 :new-classpath? true
                 :test-comment (var test-comment)}
                options)
-        (assoc {} :config)
+        (assoc {} :options)
         (t/repl ns)
         (dorun))))
 
@@ -35,7 +35,7 @@
                 :new-classpath? true
                 :test-comment (var test-comment)}
                options)
-        (assoc {} :config)
+        (assoc {} :options)
         (t/repl ns)
         dorun)))
 
@@ -46,7 +46,7 @@
                 :input-selector t/only-test
                 :test-comment (var test-comment)}
                options)
-        (assoc {} :config)
+        (assoc {} :options)
         (t/repl ns)
         dorun))
   ([ns]
