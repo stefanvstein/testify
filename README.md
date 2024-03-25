@@ -66,7 +66,7 @@ There are different evaluations functions, `eval-in-ns`, `eval-as-use` and `eval
 
 Since these tests are automated, any exception thrown will stop the process. All remaining test-comments will be ignored up on a thrown exception.
 
-A test-case can easily use clojure.test/is to verify facts along the way, and the above run functions can be called withing a deftest.
+A test-case can easily use clojure.test/is to verify facts along the way, and the above eval- functions can be called withing a deftest.
 
 ```clojure
 (ns project.testcase
@@ -116,7 +116,7 @@ Automated evaluation and their result is printed to \*out\*, including preparati
 => #namespace[project.testcase-9379]
 ```
 
-The `eval-as-use` and `eval-all` alternatives uses an isolated classloader, discarded after the run. The tools expects files with a leading ns form, but translates it to a in-ns, followed by individual requirements. The resulting namespace is not considered a loaded lib by Clojure.
+The `eval-as-use` and `eval-all` alternatives uses an isolated classloader, discarded after the evaluation run. The tools expects files with a leading ns form, but translates it to a in-ns, followed by individual requirements. The resulting namespace is not considered a loaded lib by Clojure.
 
 This tool is heavily influenced by Cognitects Transcriptor library, which evaluates repl files in a similar fashion, which is not regular clojure source files, that your favorite dev environment already understand.
 
@@ -124,11 +124,11 @@ This tool is heavily influenced by Cognitects Transcriptor library, which evalua
 
 The eval- functions takes a optional map of options: 
 
-`:test-comment` is a var of the macro used as test comment default value `#'testify/test-comment`. It can be changed to make selective runs in the same namespace. 
+`:test-comment` is a var of the macro used as test comment default value `#'testify/test-comment`. It can be changed to make selective evaluation runs in the same namespace. 
 
 *Note that `eval-all` will evaluate the whole file representing the name space into a new anonymous namespace. If the optional test comment macro is defined here, it will most likely not match that when defined in test-comment option. Just put additional test-comment definitions in another namespace when using `eval-all`.* 
 
-`:new-classpath?` is a boolean telling whether each test-comment should run in a new class-loader, so that locally defined types are omitted after each test comment. This is set for `eval-as-use` and `eval-all`.
+`:new-classpath?` is a boolean telling whether each test-comment should evaluated in a new class-loader, so that locally defined types are omitted after each test comment. This is set for `eval-as-use` and `eval-all`.
 
 `:keep-ns-on-exception?` is set to  omit removing any tear-off name space on thrown exception. Can be used to investigate circumstances.
 
