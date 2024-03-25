@@ -8,7 +8,7 @@
    [clojure.lang LineNumberingPushbackReader]))
 
 (defn unique-ns [context prefix]
-  (if-let [fun (:unique-ns context)]
+  (if-let [fun (:unique-ns (:config context))]
     (fun prefix)
     (let [next-id (. clojure.lang.RT (nextID))
           un (symbol (str prefix "-" next-id))]
@@ -41,7 +41,7 @@
        (symbol? (second form))))
 
 (defn translate-ns
-  [form {:keys [use-target?]
+  [form {{:keys [use-target?]} :config
          :as context}]
   (when (ns? form)
     (let [[_ the-ns & args] form
@@ -88,7 +88,8 @@
     (dissoc :current-case)
     (assoc :case-executed? true)))
 
-(defn test-form [form {:keys [test-comment run-all-cases? case-executed?] 
+(defn test-form [form {{:keys [test-comment]} :config
+                       :keys [run-all-cases? case-executed?] 
                        :as context}]
   (when (test-form? test-comment form)
     (let [content (next form)
@@ -160,8 +161,9 @@
   (dissoc context :remove-ns))
 
 (defn read-and-eval [{:as context
-                      :keys [input-selector
-                             read-eval]}]
+                      read-eval :read-eval
+                      {input-selector :input-selector
+                       :as config} :config}]
   (let [input (main/with-read-known
                 (server/repl-read request-prompt
                                   request-exit))]
@@ -177,14 +179,15 @@
                     (try
                       (eval-print read-and-eval input)
                       (catch Exception e
-                        (when-not (:keep-ns-on-exception? context)
+                        (when-not (:keep-ns-on-exception? config)
                           (final read-eval context))
                         (throw e))))
 
                   (recur context)))))
 
 
-(defn repl-with [{:keys [new-classpath?] :as context} rdr ns-str]
+(defn repl-with [{{:keys [new-classpath?]} :config 
+                  :as context} rdr ns-str]
   (with-open [rdr rdr]
     (binding [*ns* *ns*
               *source-path* ns-str
@@ -212,9 +215,9 @@
         LineNumberingPushbackReader.)))
 
 (defn repl
-  [ns current-context]
+  [ns context]
   (let [ns-str (name ns)
-        context (repl-with current-context (source-reader ns-str) ns-str)]
+        context (repl-with context (source-reader ns-str) ns-str)]
 
     (if (:there-is-more-form context)
       (recur ns (dissoc context :there-is-more-form :case-executed?))

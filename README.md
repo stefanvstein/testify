@@ -130,9 +130,11 @@ The eval- functions takes a optional map of options:
 
 `:new-classpath?` is a boolean telling whether each test-comment should run in a new class-loader, so that locally defined types are omitted after each test comment. This is set for `eval-as-use` and `eval-all`.
 
-`:keep-ns-on-exception?` is a boolean that when set omits removing any tear-off name space on thrown exception. Can be used to investigate circumstances
+`:keep-ns-on-exception?` is set to  omit removing any tear-off name space on thrown exception. Can be used to investigate circumstances.
 
-The other options `:execute-case`, `:current-case`, `:case-executed?`, `:forms`, `:there-is-more-form`, `:context` and `:remove-ns` are used internally and is subject to change
+`:use-target?` should the target namespace be referred as use. Set by default in `eval-as-use`.
+
+`:unique-ns` a optional function translating a namespace symbol to a symbol used in tear-off namespace. Can be used to override default. 
 
 # License
 Eclipse Public License, same as Clojure. https://www.eclipse.org/legal/epl-v10.html
