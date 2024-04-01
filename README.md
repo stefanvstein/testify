@@ -132,7 +132,7 @@ Testify is heavily influenced by Cognitects Transcriptor library, which evaluate
 
 ## Other comments
 
-It's possible to use other, home grown, comments with testify. Below we define unit-test as a comment to evaluate:
+It's possible to use other, home grown, comments with testify:
 
 ```clojure
 (ns project.tests
