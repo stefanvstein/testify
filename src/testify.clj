@@ -1,19 +1,22 @@
 (ns testify
+  "Testify turns code in your comments into automatically
+  evaluated scripts, while still remaining embedded as a
+  comment within your code. You rename the comment to
+  test-comment and evaluate (eval-in-ns 'your-namespace)
+  to automate evaluation"
   (:require [testify.core :as t]))
 
-
-
 (defmacro test-comment
-  "A test to be run in a repl session. Testify will run contained
-  statement automitically, in a another namespace with everything in
-  this namespace referred.
-  It's like a comment, ignores body, yields nil"
+  "Testify will find the top level test-comment and evaluate it
+  automatically in a repl session. The test-comment is in all
+  means a comment, except for its name. It ignores its body,
+  and yields nil"
   [& _])
 
-
-
 (defn eval-as-use
-  "Evaluate content in test-comment of ns in a tearoff namespace where ns is refered."
+  "Evaluate content of each test-comment of namespace ns in
+  its own anonymous tear-off namespace where ns is referred
+  to as use. For options, see README"
   ([ns]
    (eval-as-use ns {}))
   ([ns options]
@@ -27,7 +30,12 @@
         (dorun))))
 
 (defn eval-all
-  "Evaluate content in test-comment of ns in a tearoff namespace in which all of ns is evaluated."
+  "Evaluate content of each test-comment of namespace ns in
+  its own anonymous tear-off namespace, in which all
+  content of namespace ns is evaluated. Evaluation of the
+  test-comment is peformed after all other content of ns
+  has been evaluated in the tear-off namespace. For options,
+  see README"
   ([ns]
    (eval-all ns {}))
   ([ns options]
@@ -40,7 +48,10 @@
         dorun)))
 
 (defn eval-in-ns
-  "Evaluate content in test-comment of ns"
+  "Evaluate content in test-comments of namespace ns. This
+  may alter the namespace in the same way as if the content
+  of the test-comment was evaluated manually. For options,
+  see README"
   ([ns options]
    (->> (merge {:run-all-cases? true
                 :input-selector t/only-test
@@ -51,5 +62,3 @@
         dorun))
   ([ns]
    (eval-in-ns ns {})))
-
-
