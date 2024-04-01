@@ -128,8 +128,6 @@ Automated evaluation and their result is printed to \*out\*, including preparati
 
 The `eval-as-use` and `eval-all` alternatives uses an isolated classloader, discarded after the evaluation run. Testify expects source files with a leading ns form, which translates to a in-ns, followed by individual requirements. The resulting namespace is not considered a loaded lib by Clojure.
 
-Testify is heavily influenced by Cognitects Transcriptor library, which evaluates repl files in a similar fashion. Repl files are though not regular clojure source files, that your favorite dev environment already understands.
-
 ## Other comments
 
 It's possible to use other, home grown, comments with testify:
@@ -176,5 +174,10 @@ The eval- functions takes an optional map of options:
 
 `:unique-ns` an optional function translating a namespace symbol to a symbol used for tear-off namespace. Can be used to override default, as a predictive alternative.
 
+## Influence
+
+Testify is heavily influenced by Cognitects Transcriptor library, which evaluates repl files in a similar fashion. Repl files are though not regular clojure source files, that your favorite dev environment already understands.
+
 # License
+
 Eclipse Public License, same as Clojure. https://www.eclipse.org/legal/epl-v10.html
