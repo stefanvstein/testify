@@ -142,18 +142,17 @@ It's possible to use other, home grown, comments with testify:
 
 (defmacro unit-test [& _])
 
-;; and perhaps have a more meaningful name:
+;; and perhaps have a more meaningful name, like unit-test:
 
 (unit-test
   (def a 2)
   (+ a 3)
   (is (= 5 *1)))
 
-;; Supply a optional :test-var to pick the comment
-;; macro you want to evaluate:
+;; Supply an optional :test-var parameter to pick the
+;; "comment macro" you want to evaluate:
 
 (deftest test-the-test
-  (eval-as-use 'project.tests {:test-var #'unit-test}))
 ```
 
 Additional vars can be used categorize comments further.
