@@ -8,6 +8,7 @@ You rename the `comment` to `test-comment` and evaluate `(eval-in-ns 'your-names
 
 Perhaps you want to evaluate these comments as example based tests.
 
+[![Clojars Project](https://img.shields.io/clojars/v/org.clojars.vstein/testify.svg)](https://clojars.org/org.clojars.vstein/testify)
 ## Background
 
 You are probably used to evaluate code manually within comment expressions, Rich comments.
