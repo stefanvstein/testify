@@ -14,13 +14,13 @@
 
 (defn eval-as-use
   "Evaluate content in test-comment of ns in a tearoff namespace where ns is refered."
-  ([ns] 
+  ([ns]
    (eval-as-use ns {}))
   ([ns options]
    (->> (merge {:input-selector t/require-and-use
                 :use-target? true
                 :new-classpath? true
-                :test-comment (var test-comment)}
+                :test-var #'test-comment}
                options)
         (assoc {} :options)
         (t/repl ns)
@@ -33,7 +33,7 @@
   ([ns options]
    (->> (merge {:input-selector t/eval-all
                 :new-classpath? true
-                :test-comment (var test-comment)}
+                :test-var #'test-comment}
                options)
         (assoc {} :options)
         (t/repl ns)
@@ -44,7 +44,7 @@
   ([ns options]
    (->> (merge {:run-all-cases? true
                 :input-selector t/only-test
-                :test-comment (var test-comment)}
+                :test-var #'test-comment}
                options)
         (assoc {} :options)
         (t/repl ns)

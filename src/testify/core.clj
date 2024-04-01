@@ -71,11 +71,11 @@
       {:forms [(list 'clojure.core/in-ns
                      (list 'quote the-ns))]})))
 
-(defn test-form? [test-comment form]
+(defn test-form? [test-var form]
   (and
    (list? form)
    (symbol? (first form))
-   (= test-comment (resolve (first form)))))
+   (= test-var (resolve (first form)))))
 
 (defn inc-or-zero [x]
   (if x (inc x) 0))
@@ -91,7 +91,7 @@
 
 (defn test-form [form {:keys [options run-all-cases? case-executed?]
                        :as context}]
-  (when (test-form? (:test-comment options) form)
+  (when (test-form? (:test-var options) form)
     (let [content (next form)
           current (-> context
                       (update :execute-case or-zero)

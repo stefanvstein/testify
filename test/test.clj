@@ -42,6 +42,6 @@
 
 (deftest tests
   (reset! a 0)
-  (eval-as-use 'test {:test-comment #'use-test})
-  (eval-all 'test {:test-comment #'eval-test})
-  (eval-in-ns 'test {:test-comment #'in-ns-test}))
+  (eval-as-use 'test {:test-var #'use-test})
+  (eval-all 'test {:test-var #'eval-test})
+  (eval-in-ns 'test {:test-var #'in-ns-test}))
