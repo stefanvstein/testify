@@ -153,6 +153,7 @@ It's possible to use other, home grown, comments with testify:
 ;; "comment macro" you want to evaluate:
 
 (deftest test-the-test
+  (eval-as-use 'project.tests {:test-var #'unit-test}))
 ```
 
 Additional vars can be used categorize comments further.
