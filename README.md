@@ -4,7 +4,7 @@
 
 Your `comment` expression became a usable snippet of code!
 **Testify** turns these comments into automatically evaluated scripts, while still remaining embedded as comments within your code.
-You rename the `comment` to `test-comment` and evaluate them with `(eval-in-ns 'your-namespace)`.
+Rename the `comment` to `test-comment` and evaluate with `(eval-in-ns 'your-namespace)`.
 
 Perhaps you want to evaluate these comments as example based tests. It's cumbersome to transform comment expressions to traditional tests. Use Testify from your test case, and let your commented code remain. The `test-comment` is just another macro, ignoring its body, that `eval-in-ns` and its siblings recognize.
 
