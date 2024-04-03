@@ -2,11 +2,11 @@
 
 <img align="right" src="robby.jpg" width="150" height="150">
 
-Your `comment` became a usable snippet of code!
-**Testify** turns these comments into automatically evaluated scripts, while still remaining embedded as a comment within your code.
-You rename the `comment` to `test-comment` and evaluate `(eval-in-ns 'your-namespace)` to automate re-evaluation.
+Your `comment` expression became a usable snippet of code!
+**Testify** turns these comments into automatically evaluated scripts, while still remaining embedded as comments within your code.
+You rename the `comment` to `test-comment` and evaluate them with `(eval-in-ns 'your-namespace)`.
 
-Perhaps you want to evaluate these comments as example based tests.
+Perhaps you want to evaluate these comments as example based tests. It's cumbersome to transform comment expressions to traditional tests. Use Testify from your test case, and let your commented code remain. The `test-comment` is just another macro, ignoring its body, that `eval-in-ns` and its siblings recognize.
 
 [![Clojars Project](https://img.shields.io/clojars/v/org.clojars.vstein/testify.svg)](https://clojars.org/org.clojars.vstein/testify)
 ## Background
@@ -22,13 +22,13 @@ You have comments like this in you source files:
   (def a 2)
   (+ a 3))
 ```
-Var `a` becomes defined in the namespace when you evaluate these statements manually, rather than when you run the system, as it is embedded in a comment. Traditional example based tests, using e.g. clojure.test, are normally not defined like this. They are defined like functions, rather than as the result of interactive fiddling.
+Var `a` becomes defined in the namespace when you evaluate these statements manually, rather than when you run the system, as it is embedded in a comment. Traditional example based tests, using e.g. clojure.test, are normally defined as functions, rather than as the result of interactive fiddling.
 
-It's also likely that you use comment expressions to do some administrative tasks, like poking in a database or similar. That you probably don't want automated, but keep as interactive snippets.
+It's also likely that you use comment expressions to do some administrative tasks, like poking in a database or similar, that you probably don't want automated, but keep as interactive snippets.
 
 ## How?
 
-With Testify you automate evaluation of similar comment expressions, named `test-comment` rather than `comment`. The test-comment macro is equal to the traditional `comment` macro, as both simply ignore its body. As soon you have a comment expression which you want to evaluate automatically, perhaps as a test, you simply rename the `comment` to `test-comment`.
+**Testify** automate evaluation of similar comment expressions, named `test-comment` rather than `comment`. The test-comment macro is equal to the traditional `comment` macro, as both simply ignore its body. As soon you have a comment expression which you want to evaluate automatically, perhaps as a test, you simply rename the `comment` to `test-comment`.
 
 ```clojure
 (ns project.testcase
@@ -44,7 +44,7 @@ With Testify you automate evaluation of similar comment expressions, named `test
   ;; like evaluating test-comments
   (eval-in-ns 'project.testcase))
 ```
-You evaluate content of top level test-comment expressions by supplying the namespace to one of the three functions `eval-as-use`, `eval-all` or `eval-in-ns`.
+You evaluate content of top level test-comment expressions by supplying the namespace to one of the three functions `eval-as-use`, `eval-all` or `eval-in-ns`, that recognize the test-comment.
 
 *Note that only the content of top level test-comments in the source file will be evaluated. Nested test-comments will just be like ordinary comments, ignored.*
 
@@ -65,19 +65,19 @@ Every step and its result will be printed to \*out\*:
 => 5
 ```
 ## Alternatives
-There are different evaluations functions, `eval-in-ns`, `eval-as-use` and `eval-all`, having slightly different behavior:
+There are different evaluation functions, `eval-in-ns`, `eval-as-use` and `eval-all`, having slightly different behavior:
 
-`eval-in-ns` evaluates the content of the test-comments in its already existing namespace. This is pretty much the same as evaluating step by step manually as we usually do, but not always that great for automated testing. The namespace remains, possibly altered, afterwards.
+`eval-in-ns` evaluates the content of the test-comments in its already existing namespace. This is pretty much the same as evaluating step by step manually as we usually do with comment. But this is not always great for automation as the namespace remains, possibly altered.
 
-`eval-as-use` evaluates content of each test-comment in a new tear-off namespace and refer to the current namespace as referring by use, as depicted blow. All public functions are available. The tear-off namespace is deleted after each test-comment
+`eval-as-use` evaluates content of each test-comment in a new tear-off namespace and refer to the current namespace as refered by use, as depicted blow. All public functions are available. The tear-off namespace is deleted after each test-comment
 
-`eval-all` evaluates all forms in namespace in another tear-off namespace. All vars are available, including private, except that they belong to the new temporary tear-off namespace. The tear-off is removed after each test-comment. The whole namespace is evaluated before test-comments are evaluated. The test-comment is simply a comment during initial evaluation.
+`eval-all` evaluates all forms in namespace in another tear-off namespace. All vars are available, including private, except that they belong to the new temporary tear-off namespace. The whole tear-off namespace is evaluated before and removed after, each test-comment is evaluated. The test-comment is ignored, as a comment, during initial evaluation.
 
-*Var `a` is not present in namespace project.testcase, when using `eval-as-use` or `eval-all` as it is placed in the tear-off namespace*
+*Var `a`, in examples above, is not present in namespace project.testcase, when using `eval-as-use` or `eval-all` as it is placed in the tear-off namespace*
 
 Since these tests are automated, any exception thrown will stop the process. All remaining test-comments will be ignored when an exception is thrown.
 
-A test-case can easily use clojure.test/is to verify facts along the way. The above eval- functions can obviously be called withing a deftest.
+A test-case can easily use clojure.test/is to verify facts along the way. The above eval- functions can be evaluated withing a deftest.
 
 ```clojure
 (ns project.testcase
@@ -97,7 +97,7 @@ A test-case can easily use clojure.test/is to verify facts along the way. The ab
 (deftest test-the-test
   (eval-as-use 'project.testcase))
 ```
-Automated evaluation and their result is printed to \*out\*, including preparation like evaluating namespace. It should be easy to understand automated evaluation. Note tear-off namespace `project.testcase-9379`:
+Automated evaluation and their result is printed to \*out\*, including preparations like evaluating namespace. It should be easy to understand automated evaluation by reading \*out\*. Note tear-off namespace `project.testcase-9379`:
 
 ```
 (clojure.core/in-ns 'project.testcase-9379)
@@ -157,7 +157,7 @@ It's possible to use other, home grown, comments with testify:
   (eval-as-use 'project.tests {:test-var #'unit-test}))
 ```
 
-Additional vars can be used categorize comments further.
+Additional vars can categorize comments further.
 
 ## Options
 
@@ -165,7 +165,7 @@ The eval- functions takes an optional map of options:
 
 `:test-var` is a var of the macro used as test-comment. Default value is `#'testify/test-comment`. It can be changed to make selective evaluation runs in the same source file.
 
-*Note that `eval-all` will evaluate the whole file representing the namespace into a new anonymous namespace. If the optional test-comment macro is defined here, it will most likely not match that when defined in test-var option. Just put additional test-comment definitions in another namespace when using `eval-all`.*
+*Note that `eval-all` will evaluate the whole file representing the namespace into a new anonymous namespace. If the optional test-comment macro is defined here, it will most likely not match when defined in test-var option. Just put additional test-comment definitions in another namespace when using `eval-all`.*
 
 `:new-classpath?` is a boolean for whether each test-comment should be evaluated in a new class-loader, so that locally defined types are omitted after each test comment. This is set for `eval-as-use` and `eval-all`.
 
