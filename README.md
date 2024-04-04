@@ -2,11 +2,13 @@
 
 <img align="right" src="robby.jpg" width="150" height="150">
 
-Your `comment` expression became a usable snippet of code!
-**Testify** turns these comments into automatically evaluated scripts, while still remaining embedded as comments within your code.
-Rename the `comment` to `test-comment` and evaluate with `(eval-in-ns 'your-namespace)`.
+Your `comment` expression became a usable snippet of code! 
 
-Perhaps you want to evaluate these comments as example based tests. It's cumbersome to transform comment expressions to traditional tests. Use Testify from your test case, and let your commented code remain. The `test-comment` is just another macro, ignoring its body, that `eval-in-ns` and its siblings recognize.
+**Testify** turns selected comments into automatically evaluated scripts, while remaining embedded within your code. Rename the `comment` to `test-comment` and evaluate with `(eval-in-ns 'your-namespace)`.
+
+Perhaps you want to evaluate comments as example based tests. Use **Testify** to evaluate your test-comment from within your traditional test, saving you the hassle of converting your comment, or REPL structured code, into a test function. The `test-comment` is just another empty macro, ignoring its body, that `eval-in-ns` and its siblings recognize. 
+
+While `eval-in-ns` evaluate each expression as is, in place, its sibling `eval-as-use` evaluate expressions from within a foreign namespace, which probably is more suitable for non poluting tests.
 
 [![Clojars Project](https://img.shields.io/clojars/v/org.clojars.vstein/testify.svg)](https://clojars.org/org.clojars.vstein/testify)
 ## Background
@@ -52,7 +54,7 @@ Other parts of the the source file will be considered before evaluating the test
 
 *Note that it is the source code that is being evaluated, hence the source code has to be available for the classloader.*
 
-Every step and its result will be printed to \*out\*:
+Every step and its result will be printed to \*out\*, like:
 
 ```
 (clojure.core/in-ns 'project.testcase)
