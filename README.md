@@ -181,6 +181,10 @@ The eval- functions takes an optional map of options:
 
 Testify is heavily influenced by Cognitects Transcriptor library, which evaluates repl files in a similar fashion. Repl files are though not regular clojure source files, that your favorite dev environment already understands.
 
+## Contact
+
+Questions or ideas? Just ping me at Clojurians: stefanvstein
+
 # License
 
 Eclipse Public License, same as Clojure. https://www.eclipse.org/legal/epl-v10.html
