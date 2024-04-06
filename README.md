@@ -181,9 +181,15 @@ The eval- functions takes an optional map of options, as seen above. Following o
 
 Testify is heavily influenced by Cognitects Transcriptor library, which evaluates repl files in a similar fashion. Repl files are though not regular clojure source files, that your favorite dev environment already understands.
 
+## Alternative tools
+
+Transcriptor https://github.com/cognitect-labs/transcriptor is surely still an alternative tool, even though it evaluate repl files rather than comments.
+
+RCF https://github.com/hyperfiddle/rcf is another tool that automate evaluation in the REPL. It is oriented around sending the whole comment expression, called tests, to the REPL. Under the hood it is driven by a more advanced macro, that switches in behavior depending on state. It expands to either wrapping content into a do or nothing at all. **Testify** will never change behaviour of macros. RCF can also translate content of its macros to clojure.test tests.
+
 ## Contact
 
-Questions or ideas? Please ping me at Clojurians: stefanvstein
+Questions or ideas? Please ping me at Clojurians: @stefanvstein
 
 # License
 
