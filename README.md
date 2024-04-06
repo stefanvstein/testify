@@ -8,7 +8,7 @@ Your `comment` expression became a usable snippet of code!
 
 Perhaps you want to evaluate comments as example based tests. Use **Testify** to evaluate your test-comment from within your traditional test, saving you the hassle of converting your comment, or REPL structured code, into a test function. The `test-comment` is just another empty macro, ignoring its body, that `eval-in-ns` and its siblings recognize. 
 
-While `eval-in-ns` evaluate each expression as is, in place, its sibling `eval-as-use` evaluate expressions from within a foreign namespace, which probably is more suitable for possibly poluting tests.
+While `eval-in-ns` evaluate each expression as is, in place, its sibling `eval-as-use` evaluate expressions from within a foreign namespace, which probably is more suitable for possibly polluting tests.
 
 [![Clojars Project](https://img.shields.io/clojars/v/org.clojars.vstein/testify.svg)](https://clojars.org/org.clojars.vstein/testify)
 ## Background
