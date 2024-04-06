@@ -10,5 +10,5 @@
   (is (= 5 *1)))
 
 (deftest test-the-test
-  (eval-as-use 'project.tests {:test-var #'unit-test}))
+  (eval-as-use 'project.tests  #'unit-test))
 
