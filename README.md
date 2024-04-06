@@ -163,7 +163,7 @@ Additional vars can categorize comments further.
 
 ## Options
 
-The eval- functions takes an optional either var, as seen above, or map of options. The var is shortcut for map contining the key :test-var with the option as value. Following options are available:
+The eval- functions takes an optional either var, as seen above, or map of options. The var is shortcut for map containing the key :test-var with the option as value. Following options are available:
 
 `:test-var` is a var of the macro used as test-comment. Default value is `#'testify/test-comment`. It can be changed to make selective evaluation runs in the same source file.
 
