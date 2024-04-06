@@ -26,7 +26,7 @@ You have comments like this in you source files:
 ```
 Var `a` becomes defined in the namespace when you evaluate these statements manually, rather than when you run the system, as it is embedded in a comment. Traditional example based tests, using e.g. clojure.test, are normally defined as functions, rather than as the result of interactive fiddling.
 
-It's also likely that you use comment expressions to do some administrative tasks, like poking in a database or similar, that you probably don't want automated, but keep as interactive snippets.
+It's also likely that you use comment expressions to do some administrative tasks, like poking in a database or similar, that you probably don't want automated, but keep as interactive snippets, close to related code.
 
 ## How?
 
@@ -52,7 +52,7 @@ You evaluate content of top level test-comment expressions by supplying the name
 
 Other parts of the the source file will be considered before evaluating the test-comments, slightly different depending on evaluation method. The test-comments are thereafter evaluated from top to bottom as they appear.
 
-*Note that it is the source code that is being evaluated, hence the source code has to be available for the classloader.*
+*Note that it is the source code that is being evaluated, hence the source code has to be available for the classloader. Only well known source code should be evaluated as the clojure reader is not designed for reading unknown data.*
 
 Every step and its result will be printed to \*out\*, like:
 
@@ -69,7 +69,7 @@ Every step and its result will be printed to \*out\*, like:
 ## Alternatives
 There are different evaluation functions, `eval-in-ns`, `eval-as-use` and `eval-all`, having slightly different behavior:
 
-`eval-in-ns` evaluates the content of the test-comments in its already existing namespace. This is pretty much the same as evaluating step by step manually as we usually do with comment. But this is not always great for automation as the namespace remains, possibly altered.
+`eval-in-ns` evaluates the content of the test-comments in its already existing namespace. This is pretty much the same as evaluating step by step manually as usually done with comment. But this is not always great for automation as the namespace remains, possibly altered.
 
 `eval-as-use` evaluates content of each test-comment in a new tear-off namespace and refer to the current namespace as refered by use, as depicted blow. All public functions are available. The tear-off namespace is deleted after each test-comment
 
@@ -163,7 +163,7 @@ Additional vars can categorize comments further.
 
 ## Options
 
-The eval- functions takes an optional map of options:
+The eval- functions takes an optional map of options, as seen above. Following options are available:
 
 `:test-var` is a var of the macro used as test-comment. Default value is `#'testify/test-comment`. It can be changed to make selective evaluation runs in the same source file.
 
@@ -183,7 +183,7 @@ Testify is heavily influenced by Cognitects Transcriptor library, which evaluate
 
 ## Contact
 
-Questions or ideas? Just ping me at Clojurians: stefanvstein
+Questions or ideas? Please ping me at Clojurians: stefanvstein
 
 # License
 
