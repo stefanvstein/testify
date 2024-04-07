@@ -70,6 +70,8 @@ Every step and its result will be printed to \*out\*, like:
 (+ a 3)
 => 5
 ```
+Each form is pretty printed data structure, rather than how it appears in code.
+
 ## Isolation
 There are different evaluation functions, `eval-in-ns`, `eval-as-use` and `eval-all`, having slightly different behavior:
 
