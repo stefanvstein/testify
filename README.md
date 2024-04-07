@@ -2,13 +2,17 @@
 
 <img align="right" src="robby.jpg" width="150" height="150">
 
-Your `comment` expression became a usable snippet of code! 
+*The `comment` became a usable snippet of code!* 
 
 **Testify** turns selected comments into automatically evaluated scripts, while remaining embedded within your code. Rename the `comment` to `test-comment` and evaluate with `(eval-in-ns 'your-namespace)`.
 
-Perhaps you want to evaluate comments as example based tests. Use **Testify** to evaluate your test-comment from within your traditional test, saving you the hassle of converting your comment, or REPL structured code, into a test function. The `test-comment` is just another empty macro, ignoring its body, that `eval-in-ns` and its siblings recognize. 
+Avoid the hassle of restructuring your comment into test functions. Use **Testify** to evaluate your comment from within your traditional test.  
 
-While `eval-in-ns` evaluate each expression as is, in place, its sibling `eval-as-use` evaluate expressions from within a foreign namespace, which probably is more suitable for possibly polluting tests.
+The `test-comment` is just another empty macro, ignoring its body, that `eval-in-ns` recognize. It can easily be told to evaluate content of any other form. The `test-comment` is a default.
+
+**Testify** use levels of isolation. While `eval-in-ns` evaluate expressions in it's own namespace like with the REPL, its sibling `eval-as-use` evaluate from within a temporary namespace to prevent pollution. This is more suitable for repeatable tests.  
+
+**Testify** reads source code, and keeps track of where it is. Code should be highlighted when a test assertion fail.
 
 [![Clojars Project](https://img.shields.io/clojars/v/org.clojars.vstein/testify.svg)](https://clojars.org/org.clojars.vstein/testify)
 ## Background
@@ -17,20 +21,20 @@ You are probably used to evaluate code manually within comment expressions, Rich
 
 *This is very similar to writing in a repl, but you select and evaluate an expression in the source code file rather than writing the expression up front. These expressions are hidden behind comments since they are expressions to interact with, rather than being part of the system. This is a very popular development technique in lisps, like Clojure.*
 
-You have comments like this in you source files:
+You have comments like this in the source files:
 
 ```clojure
 (comment
   (def a 2)
   (+ a 3))
 ```
-Var `a` becomes defined in the namespace when you evaluate these statements manually, rather than when you run the system, as it is embedded in a comment. Traditional example based tests, using e.g. clojure.test, are normally defined as functions, rather than as the result of interactive fiddling.
+Var `a` becomes defined in the namespace when you evaluate these statements manually, rather than when you run the system, as it is embedded in a comment. Traditional example based tests, using e.g. clojure.test, are normally defined as functions, rather than as the result of interactive fiddling. Interactive fiddling and structured functions does not yield the same code structure and it is a bit of a hassle to restructure. Larger tests, involving more than individual units, does usually get incomprehensible while defined as single functions, which makes scripts more preferable.  
 
 It's also likely that you use comment expressions to do some administrative tasks, like poking in a database or similar, that you probably don't want automated, but keep as interactive snippets, close to related code.
 
 ## How?
 
-**Testify** automate evaluation of similar comment expressions, named `test-comment` rather than `comment`. The test-comment macro is equal to the traditional `comment` macro, as both simply ignore its body. As soon you have a comment expression which you want to evaluate automatically, perhaps as a test, you simply rename the `comment` to `test-comment`.
+**Testify** automate evaluation of comment expressions, named `test-comment` rather than `comment`. The test-comment macro is equal to the traditional `comment` macro, as both simply ignore its body. As soon you have a comment expression which you want to evaluate automatically, perhaps as a test, you simply rename the `comment` to `test-comment`.
 
 ```clojure
 (ns project.testcase
@@ -43,16 +47,16 @@ It's also likely that you use comment expressions to do some administrative task
 
 (comment
   ;; space for more experimental and administrative tasks,
-  ;; like evaluating test-comments
+  ;; like e.g. evaluating test-comments
   (eval-in-ns 'project.testcase))
 ```
 You evaluate content of top level test-comment expressions by supplying the namespace to one of the three functions `eval-as-use`, `eval-all` or `eval-in-ns`, that recognize the test-comment.
 
-*Note that only the content of top level test-comments in the source file will be evaluated. Nested test-comments will just be like ordinary comments, ignored.*
+*Note that only the content of top level test-comments in the source file will be evaluated. Nested test-comments will just be like ordinary comments, ignored. We don't want deeply nested suprises.*
 
-Other parts of the the source file will be considered before evaluating the test-comments, slightly different depending on evaluation method. The test-comments are thereafter evaluated from top to bottom as they appear.
+Other parts of the the source file will be considered, slightly different depending on evaluation method, before evaluating test-comments. The test-comments are thereafter evaluated from top to bottom as they appear.
 
-*Note that it is the source code that is being evaluated, hence the source code has to be available for the classloader. Only well known source code should be evaluated as the clojure reader is not designed for reading unknown data.*
+*Note that it is the source code that is being evaluated, hence the source code has to be available for the classloader. Only well known source code should be evaluated as the Clojure reader is not designed for reading unknown data.*
 
 Every step and its result will be printed to \*out\*, like:
 
@@ -66,7 +70,7 @@ Every step and its result will be printed to \*out\*, like:
 (+ a 3)
 => 5
 ```
-## Alternatives
+## Isolation
 There are different evaluation functions, `eval-in-ns`, `eval-as-use` and `eval-all`, having slightly different behavior:
 
 `eval-in-ns` evaluates the content of the test-comments in its already existing namespace. This is pretty much the same as evaluating step by step manually as usually done with comment. But this is not always great for automation as the namespace remains, possibly altered.
@@ -77,7 +81,7 @@ There are different evaluation functions, `eval-in-ns`, `eval-as-use` and `eval-
 
 *Var `a`, in examples above, is not present in namespace project.testcase, when using `eval-as-use` or `eval-all` as it is placed in the tear-off namespace*
 
-Since these tests are automated, any exception thrown will stop the process. All remaining test-comments will be ignored when an exception is thrown.
+Any exception thrown will stop the process. All remaining test-comments will be ignored when an exception is thrown.
 
 A test-case can easily use clojure.test/is to verify facts along the way. The above eval- functions can be evaluated withing a deftest.
 
