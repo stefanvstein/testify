@@ -12,7 +12,7 @@ The `test-comment` is an empty macro ignoring its body, that **Testify** recogni
 
 **Testify** use levels of isolation. While `eval-in-ns` evaluate expressions in it's own namespace, like usually with the REPL, its sibling `eval-as-use` evaluate from within a temporary namespace to prevent pollution. This is more suitable for repeatable tests.  
 
-**Testify** reads source code, and keeps track of where it is. Code should be highlighted when a test assertion fail.
+**Testify** reads source code, and keeps track of where it is. Code should be highlighted when a test assertion fail, even thougt the assertion actually is in a comment.
 
 [![Clojars Project](https://img.shields.io/clojars/v/org.clojars.vstein/testify.svg)](https://clojars.org/org.clojars.vstein/testify)
 
