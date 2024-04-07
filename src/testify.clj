@@ -32,7 +32,7 @@
 
 (defn eval-all
   "Evaluate content of each test-comment of namespace ns in
-  its own anonymous tear-off namespace, in which all
+  its own anonymous temporary namespace, in which all
   content of namespace ns is evaluated. Evaluation of the
   test-comment is peformed after all other content of ns
   has been evaluated. For options, see README"
