@@ -52,7 +52,7 @@ It's also likely that you use comment expressions to do some administrative task
 ```
 You evaluate content of top level test-comment expressions by supplying the namespace to one of the three functions `eval-as-use`, `eval-all` or `eval-in-ns`, that recognize the test-comment.
 
-*Note that only the content of top level test-comments in the source file will be evaluated. Nested test-comments will just be like ordinary comments, ignored. We don't want deeply nested suprises.*
+*Note that only the content of top level test-comments in the source file will be evaluated. Nested test-comments will just be like ordinary comments, ignored. We don't want deeply nested surprises.*
 
 Other parts of the the source file will be considered, slightly different depending on evaluation method, before evaluating test-comments. The test-comments are thereafter evaluated from top to bottom as they appear.
 
@@ -75,7 +75,7 @@ There are different evaluation functions, `eval-in-ns`, `eval-as-use` and `eval-
 
 `eval-in-ns` evaluates the content of the test-comments in its already existing namespace. This is pretty much the same as evaluating step by step manually as usually done with comment. But this is not always great for automation as the namespace remains, possibly altered.
 
-`eval-as-use` evaluates content of each test-comment in a new tear-off namespace and refer to the current namespace as refered by use, as depicted blow. All public functions are available. The tear-off namespace is deleted after each test-comment
+`eval-as-use` evaluates content of each test-comment in a new tear-off namespace and refer to the current namespace as referred by use, as depicted blow. All public functions are available. The tear-off namespace is deleted after each test-comment
 
 `eval-all` evaluates all forms in namespace in another tear-off namespace. All vars are available, including private, except that they belong to the new temporary tear-off namespace. The whole tear-off namespace is evaluated before and removed after, each test-comment is evaluated. The test-comment is ignored, as a comment, during initial evaluation.
 
@@ -189,7 +189,7 @@ Testify is heavily influenced by Cognitects Transcriptor library, which evaluate
 
 Transcriptor https://github.com/cognitect-labs/transcriptor is surely still an alternative tool, even though it evaluate repl files rather than comments.
 
-RCF https://github.com/hyperfiddle/rcf is another tool that automate evaluation in the REPL. It is oriented around sending the whole comment expression, called tests, to the REPL. Under the hood it is driven by a more advanced macro, that switches in behavior depending on state. It expands to either wrapping content into a do or nothing at all. **Testify** will never change behaviour of macros. RCF can also translate content of its macros to clojure.test tests.
+RCF https://github.com/hyperfiddle/rcf is another tool that automate evaluation in the REPL. It is oriented around sending the whole comment expression, called tests, to the REPL. Under the hood it is driven by a more advanced macro, that switches in behavior depending on state. It expands to either wrapping content into a do or nothing at all. **Testify** will never change behavior of macros. RCF can also translate content of its macros to clojure.test tests.
 
 ## Contact
 
