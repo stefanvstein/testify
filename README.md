@@ -8,9 +8,9 @@
 
 Avoid the hassle of restructuring your comment into test functions. Use **Testify** to evaluate your comment from within your traditional test.  
 
-The `test-comment` is just another empty macro, ignoring its body, that `eval-in-ns` recognize. It can easily be told to evaluate content of any other form. The `test-comment` is a default.
+The `test-comment` is an empty macro ignoring its body, that **Testify** recognize. **Testify** can easily be told to evaluate content of any other top level form. The `test-comment` is a default.
 
-**Testify** use levels of isolation. While `eval-in-ns` evaluate expressions in it's own namespace like with the REPL, its sibling `eval-as-use` evaluate from within a temporary namespace to prevent pollution. This is more suitable for repeatable tests.  
+**Testify** use levels of isolation. While `eval-in-ns` evaluate expressions in it's own namespace, like usually with the REPL, its sibling `eval-as-use` evaluate from within a temporary namespace to prevent pollution. This is more suitable for repeatable tests.  
 
 **Testify** reads source code, and keeps track of where it is. Code should be highlighted when a test assertion fail.
 
@@ -50,9 +50,9 @@ It's also likely that you use comment expressions to do some administrative task
   ;; like e.g. evaluating test-comments
   (eval-in-ns 'project.testcase))
 ```
-You evaluate content of top level test-comment expressions by supplying the namespace to one of the three functions `eval-as-use`, `eval-all` or `eval-in-ns`, that recognize the test-comment.
+You evaluate content of top level test-comment expressions by supplying its namespace to one of the three functions `eval-as-use`, `eval-all` or `eval-in-ns`, that recognize the test-comment.
 
-*Note that only the content of top level test-comments in the source file will be evaluated. Nested test-comments will just be like ordinary comments, ignored. We don't want deeply nested surprises.*
+*Note that only the content of top level test-comments in the source file will be evaluated. Nested test-comments will just be like ordinary comments, ignored. Without deeply nested surprises.*
 
 Other parts of the the source file will be considered, slightly different depending on evaluation method, before evaluating test-comments. The test-comments are thereafter evaluated from top to bottom as they appear.
 
@@ -75,11 +75,11 @@ There are different evaluation functions, `eval-in-ns`, `eval-as-use` and `eval-
 
 `eval-in-ns` evaluates the content of the test-comments in its already existing namespace. This is pretty much the same as evaluating step by step manually as usually done with comment. But this is not always great for automation as the namespace remains, possibly altered.
 
-`eval-as-use` evaluates content of each test-comment in a new tear-off namespace and refer to the current namespace as referred by use, as depicted blow. All public functions are available. The tear-off namespace is deleted after each test-comment
+`eval-as-use` evaluates content of each test-comment in a new temporary namespace and refer to the current namespace as by `use`, as depicted blow. All public functions are available. The temporary namespace is deleted after each test-comment
 
-`eval-all` evaluates all forms in namespace in another tear-off namespace. All vars are available, including private, except that they belong to the new temporary tear-off namespace. The whole tear-off namespace is evaluated before and removed after, each test-comment is evaluated. The test-comment is ignored, as a comment, during initial evaluation.
+`eval-all` evaluates all forms in namespace in another temporary namespace. All vars are available, including private, except that they belong to the new temporary namespace. The whole temporary namespace is evaluated before and removed after, each test-comment is evaluated. The test-comment is ignored, as a comment, during initial evaluation.
 
-*Var `a`, in examples above, is not present in namespace project.testcase, when using `eval-as-use` or `eval-all` as it is placed in the tear-off namespace*
+*Var `a`, in examples above, is not present in namespace project.testcase, when using `eval-as-use` or `eval-all` as it is placed in the temporary namespace*
 
 Any exception thrown will stop the process. All remaining test-comments will be ignored when an exception is thrown.
 
@@ -96,14 +96,14 @@ A test-case can easily use clojure.test/is to verify facts along the way. The ab
   (is (= 5 *1)))
 
 ;; A unit test is better evaluated with eval-as-use
-;; since it uses a tear-off namespace to prevent
+;; since it uses a temporary namespace to prevent
 ;; altering the target. (def a 2) above is placed
-;; in an anonymous tear-off namespace.
+;; in an anonymous temporary namespace.
 
 (deftest test-the-test
   (eval-as-use 'project.testcase))
 ```
-Automated evaluation and their result is printed to \*out\*, including preparations like evaluating namespace. It should be easy to understand automated evaluation by reading \*out\*. Note tear-off namespace `project.testcase-9379`:
+Automated evaluation and their result is printed to \*out\*, including preparations like evaluating namespace. It should be easy to understand automated evaluation by reading \*out\*. Note temporary namespace `project.testcase-9379`:
 
 ```
 (clojure.core/in-ns 'project.testcase-9379)
@@ -175,11 +175,11 @@ The eval- functions takes an optional either var, as seen above, or map of optio
 
 `:new-classpath?` is a boolean for whether each test-comment should be evaluated in a new class-loader, so that locally defined types are omitted after each test comment. This is set for `eval-as-use` and `eval-all`.
 
-`:keep-ns-on-exception?` is set to prevent removing any tear-off name space on thrown exception. Can be used to investigate circumstances.
+`:keep-ns-on-exception?` is set to prevent removing any temporary namespace on thrown exception. Can be used to investigate circumstances.
 
 `:use-target?` tells whether the target namespace should be referred as `use`. Set by default in `eval-as-use`.
 
-`:unique-ns` an optional function translating a namespace symbol to a symbol used for tear-off namespace. Can be used to override default, as a predictive alternative.
+`:unique-ns` an optional function translating a namespace symbol to a symbol used for temporary namespace. Can be used to override default, as a predictive alternative.
 
 ## Influence
 
