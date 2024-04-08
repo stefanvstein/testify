@@ -14,7 +14,7 @@ The `test-comment` is an empty macro ignoring its body, that **Testify** recogni
 
 **Testify** reads source code, and keeps track of where it is. Code should be highlighted when a test assertion fail, even thougt the assertion actually is in a comment.
 
-**Testify** is not a testing framework, but rather a pun on to witness, display progress like in the repl
+**Testify** is not a testing framework, but rather a pun on to witness, reveal the comment, display it in the repl.
 
 [![Clojars Project](https://img.shields.io/clojars/v/org.clojars.vstein/testify.svg)](https://clojars.org/org.clojars.vstein/testify)
 
