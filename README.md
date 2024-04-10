@@ -1,12 +1,12 @@
-# Testify - Evaluate Clojure comments automatically
+# Testify - Evaluate Clojure comments
 
 <img align="right" src="robby.jpg" width="150" height="150">
 
-*The `comment` became a usable snippet of code!* 
+Avoid the hassle of restructuring comments into functions.
 
-**Testify** turns selected comments into automatically evaluated scripts, while remaining embedded within your code. Rename the `comment` to `test-comment` and evaluate with `(eval-in-ns 'your-namespace)`.
+**Testify** turns selected comments into automatically evaluated scripts, while remaining embedded within the code. Evaluate these comments directly from within a traditional test.
 
-Avoid the hassle of restructuring your comment into test functions. Use **Testify** to evaluate your comment from within your traditional test.  
+Rename the `comment` to `test-comment` and evaluate with `(eval-in-ns 'your-namespace)`. **Testify** will find the test-comment and evaluate its content for you.
 
 The `test-comment` is an empty macro ignoring its body, that **Testify** recognize. **Testify** can easily be told to evaluate content of any other top level form. The `test-comment` is a default.
 
