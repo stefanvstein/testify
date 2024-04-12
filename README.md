@@ -10,7 +10,7 @@ Rename the `comment` to `test-comment` and evaluate with `(eval-in-ns 'your-name
 
 The `test-comment` is an empty macro ignoring its body, just like `comment`, that **Testify** recognizes. **Testify** can easily be told to evaluate content of any other top level form, while `test-comment` is a default.
 
-**Testify** use levels of isolation. While `eval-in-ns evaluates` expressions in its namespace, like when evaluating comments manually, its sibling `eval-as-use` evaluates from within a temporary namespace, preventing pollution. This is more suitable for repeatable tests.
+**Testify** use levels of isolation. While `eval-in-ns` evaluates expressions in its namespace, like when evaluating comments manually, its sibling `eval-as-use` evaluates from within a temporary namespace, preventing pollution. This is more suitable for repeatable tests.
 
 **Testify** reads source code, and keeps track of where it is. Code should be highlighted when a test assertion fails, even though the assertion is in a comment.
 
