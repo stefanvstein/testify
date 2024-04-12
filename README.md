@@ -6,7 +6,7 @@ Avoid the hassle of restructuring comments into functions.
 
 **Testify** turns selected comments into automatically evaluated scripts, while remaining as comments embedded within the code. Evaluate these comments directly from within a test, or in any other way preferred.
 
-Rename the `comment` to `test-comment` and evaluate with `(eval-in-ns 'your-namespace)`. **Testify** will find the `test-comment` and evaluate its content for you.
+Rename the `(comment)` to `(test-comment)` and evaluate with `(eval-in-ns 'your-namespace)`. **Testify** will find the `test-comment` and evaluate its content for you.
 
 The `test-comment` is an empty macro ignoring its body, just like `comment`, that **Testify** recognizes. **Testify** can easily be told to evaluate content of any other top level form, while `test-comment` is a default.
 
