@@ -200,7 +200,7 @@ RCF https://github.com/hyperfiddle/rcf is another tool that automates evaluation
 
 ## Contact
 
-Questions or ideas? Please ping me at Clojurians: @stefanvstein
+Questions, ideas or happy feelings? Please ping me at Clojurians: @stefanvstein
 
 # License
 
