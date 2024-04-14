@@ -1,20 +1,35 @@
 (ns testify
-  "Testify turns code in your comments into automatically
-  evaluated scripts, while still remaining embedded as
-  comment within your code. You rename the comment to
-  test-comment and evaluate (eval-in-ns 'your-namespace)
-  to automate evaluation"
+  "Avoid the hassle of restructuring comments into functions.
+  Testify turns selected comments into automatically evaluated
+  scripts, while remaining as comments embedded within the code.
+  Evaluate these comments directly from within a test, or in any
+  other way preferred. Rename the (comment) to (test-comment)
+  and evaluate with (eval-in-ns 'your-namespace). Testify will
+  find the test-comment and evaluate its content for you. The
+  test-comment is an empty macro ignoring its body, just like
+  comment, that Testify recognizes. Testify can easily be told
+  to evaluate content of any other top level form, while
+  test-comment is a default. Testify use levels of isolation.
+  While eval-in-ns evaluates expressions in its namespace, like
+  when evaluating comments manually, its sibling eval-as-use
+  evaluates from within a temporary namespace, preventing
+  pollution. This is more suitable for repeatable tests.
+  Testify reads source code, and keeps track of where it is.
+  Code should be highlighted when a test assertion fails, even
+  though the assertion is in a comment. Testify is not a testing
+  framework, but rather a pun on: to witness, reveal comment,
+  display it in the repl."
   (:require [testify.core :as t]))
 
 (defmacro test-comment
   "Testify will find the top level test-comment and evaluate it
-  automatically. The test-comment is in all means a comment, 
+  automatically. The test-comment is in all means a comment,
   except for its name. It ignores its body and yields nil"
   [& _])
 
 (defn eval-as-use
   "Evaluate content of each test-comment of namespace ns in
-  its own anonymous namespace where ns is referred to as use. 
+  its own anonymous namespace where ns is referred to as use.
   For options, see README"
   ([ns]
    (eval-as-use ns {}))
