@@ -1,4 +1,4 @@
-(defproject org.clojars.vstein/testify "0.3.1"
+(defproject org.clojars.vstein/testify "0.4.0"
   :description "Avoid the hassle of restructuring comments into functions.
   Testify turns selected comments into automatically evaluated
   scripts, while remaining as comments embedded within the code.
