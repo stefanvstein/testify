@@ -21,6 +21,13 @@
   display it in the repl."
   (:require [testify.core :as t]))
 
+
+(defn translate-classpath-option [m]
+  (cond-> m
+    (and (contains? m :new-classpath?)
+         (not (contains? m :new-classloader?)))
+    (assoc :new-classloader? (:new-classpath? m))))
+
 (defmacro test-comment
   "Testify will find the top level test-comment and evaluate it
   automatically. The test-comment is in all means a comment,
@@ -36,11 +43,11 @@
   ([ns options]
    (if (var? options)
      (eval-as-use ns {:test-var options})
-     (->> (merge {:input-selector t/require-and-use
-                  :use-target? true
-                  :new-classpath? true
-                  :test-var #'test-comment}
-                 options)
+     (->> (translate-classpath-option options)
+          (merge {:input-selector t/require-and-use
+                    :use-target? true
+                    :new-classloader? true
+                    :test-var #'test-comment})
           (assoc {} :options)
           (t/repl ns)
           (dorun)))))
@@ -56,10 +63,10 @@
   ([ns options]
    (if (var? options)
      (eval-all ns {:test-var options})
-     (->> (merge {:input-selector t/eval-all
-                  :new-classpath? true
-                  :test-var #'test-comment}
-                 options)
+     (->> (translate-classpath-option options)
+          (merge {:input-selector t/eval-all
+                  :new-classloader? true
+                  :test-var #'test-comment})
           (assoc {} :options)
           (t/repl ns)
           dorun))))
@@ -72,10 +79,10 @@
   ([ns options]
    (if (var? options)
      (eval-in-ns ns {:test-var options})
-     (->> (merge {:run-all-cases? true
+     (->> (translate-classpath-option options)
+          (merge {:run-all-cases? true
                   :input-selector t/only-test
-                  :test-var #'test-comment}
-                 options)
+                  :test-var #'test-comment})
           (assoc {} :options)
           (t/repl ns)
           dorun)))

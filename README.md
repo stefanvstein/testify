@@ -181,7 +181,7 @@ The eval- functions takes an optional either var, as seen above, or map of optio
 
 *Note that `eval-all` will evaluate the whole file representing the namespace into a new anonymous namespace. If the optional test-comment macro is defined here, it will most likely not match when defined in the test-var option. Just put additional test-comment definitions in another namespace when using `eval-all`.*
 
-`:new-classpath?` is a boolean for whether each test-comment should be evaluated in a new class-loader, so that locally defined types are omitted after each test comment. This is set for `eval-as-use` and `eval-all`.
+`:new-classloader?` is a boolean for whether each test-comment should be evaluated in a new class-loader, so that locally defined types are omitted after each test comment. This is set for `eval-as-use` and `eval-all`. :new-classpath? is an alternative, missleading, name for this option.
 
 `:keep-ns-on-exception?` is set to prevent removing any temporary namespace on a thrown exception. Can be used to investigate circumstances.
 

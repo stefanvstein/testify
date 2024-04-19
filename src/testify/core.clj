@@ -195,7 +195,7 @@
               *in* rdr]
       (main/with-bindings
         (let [ctx (assoc context :read-eval *read-eval*)]
-          (if (:new-classpath? options)
+          (if (:new-classloader? options)
             (with-another-classloader
               (read-and-eval ctx))
             (read-and-eval ctx)))))))
