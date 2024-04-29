@@ -19,14 +19,8 @@
   though the assertion is in a comment. Testify is not a testing
   framework, but rather a pun on: to witness, reveal comment,
   display it in the repl."
-  (:require [testify.core :as t]))
+  (:require [testify.impl :as t]))
 
-
-(defn translate-classpath-option [m]
-  (cond-> m
-    (and (contains? m :new-classpath?)
-         (not (contains? m :new-classloader?)))
-    (assoc :new-classloader? (:new-classpath? m))))
 
 (defmacro test-comment
   "Testify will find the top level test-comment and evaluate it
@@ -43,7 +37,7 @@
   ([ns options]
    (if (var? options)
      (eval-as-use ns {:test-var options})
-     (->> (translate-classpath-option options)
+     (->> (t/translate-classpath-option options)
           (merge {:input-selector t/require-and-use
                     :use-target? true
                     :new-classloader? true
@@ -63,7 +57,7 @@
   ([ns options]
    (if (var? options)
      (eval-all ns {:test-var options})
-     (->> (translate-classpath-option options)
+     (->> (t/translate-classpath-option options)
           (merge {:input-selector t/eval-all
                   :new-classloader? true
                   :test-var #'test-comment})
@@ -79,7 +73,7 @@
   ([ns options]
    (if (var? options)
      (eval-in-ns ns {:test-var options})
-     (->> (translate-classpath-option options)
+     (->> (t/translate-classpath-option options)
           (merge {:run-all-cases? true
                   :input-selector t/only-test
                   :test-var #'test-comment})

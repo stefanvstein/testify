@@ -1,4 +1,4 @@
-(ns testify.core
+(ns testify.impl
   (:require
    [clojure.core.server :as server]
    [clojure.java.io :as io]
@@ -6,6 +6,12 @@
    [clojure.pprint :as pp])
   (:import
    [clojure.lang LineNumberingPushbackReader]))
+
+(defn translate-classpath-option [m]
+  (cond-> m
+    (and (contains? m :new-classpath?)
+         (not (contains? m :new-classloader?)))
+    (assoc :new-classloader? (:new-classpath? m))))
 
 (defn unique-ns [make-ns prefix]
   (if make-ns
